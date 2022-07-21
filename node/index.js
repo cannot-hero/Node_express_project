@@ -37,13 +37,14 @@ const server = http.createServer((req, res) => {
     } else if (pathName === '/api') {
         fs.readFile(`${__dirname}/dev-data/data.json`, 'utf-8', (err, data) => {
             const productData = JSON.parse(data)
-            console.log(productData)
-            // res.writeHead(200, {
-            //     'Content-type': 'application/json'
-            // })
-
+            // console.log(productData)
+            res.writeHead(200, {
+                'Content-type': 'application/json'
+            })
+            // 注意这里是data  而不是productData
+            res.end(data)
         })
-        res.end('api')
+
     } else {
         //      status👇  header 👇
         res.writeHead(404, {
