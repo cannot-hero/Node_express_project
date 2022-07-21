@@ -26,6 +26,10 @@ console.log("will read file");
  * second start a server
  */
 const url = require('url')
+// 顶级代码，只执行一次  所以同步的代码执行  不用担心阻塞
+const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8')
+const dataObj = JSON.parse(data)
+
 const server = http.createServer((req, res) => {
     // send a simple response
     // console.log(req.url)
@@ -35,16 +39,11 @@ const server = http.createServer((req, res) => {
     } else if (pathName === '/product') {
         res.end('this is PRODUCT')
     } else if (pathName === '/api') {
-        fs.readFile(`${__dirname}/dev-data/data.json`, 'utf-8', (err, data) => {
-            const productData = JSON.parse(data)
-            // console.log(productData)
-            res.writeHead(200, {
-                'Content-type': 'application/json'
-            })
-            // 注意这里是data  而不是productData
-            res.end(data)
+        res.writeHead(200, {
+            'Content-type': 'application/json'
         })
-
+        // 注意这里是data  而不是productData
+        res.end(data)
     } else {
         //      status👇  header 👇
         res.writeHead(404, {
