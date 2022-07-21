@@ -25,10 +25,23 @@ console.log("will read file");
  * first create a server 
  * second start a server
  */
-
+const url = require('url')
 const server = http.createServer((req, res) => {
     // send a simple response
-    res.end('Hello from the server created by shushu')
+    // console.log(req.url)
+    const pathName = req.url
+    if (pathName === '/') {
+        res.end('Hello from the server created by shushu')
+    } else if (pathName === '/product') {
+        res.end('this is PRODUCT')
+    } else {
+        //      status👇  header 👇
+        res.writeHead(404, {
+            'Content-type': 'text/html',
+            'my-own-header': 'hello-world'
+        })
+        res.end('<h1>Page NOT FOUND</h1>')
+    }
 })
 
 server.listen(8000, () => {
