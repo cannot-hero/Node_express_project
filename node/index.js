@@ -34,6 +34,16 @@ const server = http.createServer((req, res) => {
         res.end('Hello from the server created by shushu')
     } else if (pathName === '/product') {
         res.end('this is PRODUCT')
+    } else if (pathName === '/api') {
+        fs.readFile(`${__dirname}/dev-data/data.json`, 'utf-8', (err, data) => {
+            const productData = JSON.parse(data)
+            console.log(productData)
+            // res.writeHead(200, {
+            //     'Content-type': 'application/json'
+            // })
+
+        })
+        res.end('api')
     } else {
         //      status👇  header 👇
         res.writeHead(404, {
@@ -44,6 +54,6 @@ const server = http.createServer((req, res) => {
     }
 })
 
-server.listen(8000, () => {
-    console.log('listening to requests on port 8000')
+server.listen(4000, () => {
+    console.log('listening to requests on port 4000')
 })
