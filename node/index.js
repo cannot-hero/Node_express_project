@@ -1,6 +1,9 @@
 // fs 读取数据和写入数据的函数
+// 导入顺序一般为核心模块，然后是自己的模块
 const fs = require("fs");
 const http = require('http')
+const url = require('url')
+const replaceTemplate = require('./modules/replaceTemplate')
 /*****************files****************/
 /*
 // 同步 阻塞
@@ -25,20 +28,8 @@ console.log("will read file");
  * first create a server 
  * second start a server
  */
-const url = require('url')
-const replaceTemplate = (temp, product) => {
-    let output = temp.replace(/{%PRODUCTNAME%}/g, product.productName);
-    output = output.replace(/{%IMAGE%}/g, product.image);
-    output = output.replace(/{%PRICE%}/g, product.price);
-    output = output.replace(/{%FROM%}/g, product.from);
-    output = output.replace(/{%NUTRIENTS%}/g, product.nutrients);
-    output = output.replace(/{%QUANTITY%}/g, product.quantity);
-    output = output.replace(/{%DESCRIPTION%}/g, product.description);
-    output = output.replace(/{%ID%}/g, product.id);
 
-    if (!product.organic) output = output.replace(/{%NOT_ORGANIC%}/g, 'not-organic');
-    return output;
-}
+
 // 顶级代码，只执行一次  所以同步的代码执行  不用担心阻塞
 const tempOverview = fs.readFileSync(`${__dirname}/templates/template-overview.html`, 'utf-8')
 const tempCard = fs.readFileSync(`${__dirname}/templates/template-card.html`, 'utf-8')
@@ -47,23 +38,22 @@ const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, 'utf-8')
 const dataObj = JSON.parse(data)
 
 const server = http.createServer((req, res) => {
-    // send a simple response
-    // console.log(req.url)
-    const pathName = req.url
+    const { query, pathname } = url.parse(req.url, true)
     // overview
-    if (pathName === '/' || pathName === '/overview') {
-        res.writeHead(200, {
-            'Content-type': 'text/html'
-        })
+    if (pathname === '/' || pathname === '/overview') {
+        res.writeHead(200, { 'Content-type': 'text/html' })
         // 将dataObj中数据替换到模板中
         const cardsHtml = dataObj.map(el => replaceTemplate(tempCard, el)).join('')
         const output = tempOverview.replace('{%PRODUCT_CARDS%}', cardsHtml)
         res.end(output)
         // product page
-    } else if (pathName === '/product') {
-        res.end('this is PRODUCT')
+    } else if (pathname === '/product') {
+        res.writeHead(200, { 'Content-type': 'text/html' })
+        const product = dataObj[query.id]
+        const output = replaceTemplate(tempProduct, product)
+        res.end(output)
         // api
-    } else if (pathName === '/api') {
+    } else if (pathname === '/api') {
         res.writeHead(200, {
             'Content-type': 'application/json'
         })
