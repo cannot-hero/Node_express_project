@@ -186,3 +186,8 @@ Node会检查是否有计时器或仍在后台运行的I/O任务(any pending tim
 >
 > 4 dont use too complex regular expressions(e.g. nested queantifiers)
 
+
+
+nextTick发生在下一个循环阶段之前(next loop phase)，而不是整个tick之后
+
+setImmediate在每个tick执行一次，并非立即执行，nextTick会立即执行
