@@ -191,3 +191,53 @@ Node会检查是否有计时器或仍在后台运行的I/O任务(any pending tim
 nextTick发生在下一个循环阶段之前(next loop phase)，而不是整个tick之后
 
 setImmediate在每个tick执行一次，并非立即执行，nextTick会立即执行
+
+## 33 事件和事件驱动架构
+
+观察者模式 
+
+更加解耦(more de-coupled)
+
+对于同一事件更直接的做出多次反应(react multiple times)，设置多个监听器即可
+
+
+
+## 35 introduction to streams
+
+with streams we can process meaning read and write data piece by piece without completing the whole read or write operation.
+
+therefore we dont have to keep all the data in memory.
+
+e.g. 
+
+读取文件时，先读取部分数据，然后做一些事，然后释放内存，重复，直到整个文件读取完毕
+
+👉 perfect for handling large volumes of data, for example videos.
+
+👉 内存方面更高效
+
+Nodejs中
+
+streams是EventEmitter的实例，以为这所有的流都可以emit和listen
+
+
+
+> ​				description						example			important events			important function
+>
+> 可读流	read(comsume) data		http request		data								pipe()
+>
+> ​															 fs read				  end								 read()
+>
+> 可写流	可写入								http response        drain								write
+>
+> ​															fs write streams	finish								end
+>
+> 双工流   可读且可写						net web socket
+>
+> 转换流   可读且可写						zlib
+
+背压backpressure 磁盘数据读取速度大于对这些传入数据的处理速度
+
+
+
+这里是响应无法像接收数据一样快的发送数据
