@@ -241,3 +241,28 @@ streams是EventEmitter的实例，以为这所有的流都可以emit和listen
 
 
 这里是响应无法像接收数据一样快的发送数据
+
+## 37 modules
+
+```js
+// 导出单变量的东西用module.exports  class or one function
+module.exports = Calculator
+// use exports to export multiple named variables
+exports.add = (a, b) => a + b
+```
+
+## 50 API and RESTFUL API
+
+restful api
+
+> 1 seperate API into logical resource
+>
+> 2 these resources should be exposed 结构化  expose structured resource-based URLs
+>
+> 3 use HTTP method
+>
+>  only resources (nouns) and use HTTP methods for actions 
+>
+> 4 send data as JSON
+>
+> 5 stateless all state is handled on the client, not on the server
