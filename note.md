@@ -266,3 +266,9 @@ restful api
 > 4 send data as JSON
 >
 > 5 stateless all state is handled on the client, not on the server
+
+
+
+## 53 handling post request
+
+restful api中，不指定id，数据库会配相应的id
