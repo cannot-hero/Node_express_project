@@ -269,6 +269,10 @@ restful api
 
 
 
-## 53 handling post request
+## 52 handling post request
 
 restful api中，不指定id，数据库会配相应的id
+
+## 53 responding to URL Parameters
+
+定义一个可以接收变量的路由
