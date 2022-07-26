@@ -10,8 +10,7 @@ const tours = JSON.parse(
 	fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 )
 
-// v1 指定api版本
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
 	res.status(200).json({
 		status: 'success',
 		results: tours.length,
@@ -19,11 +18,9 @@ app.get('/api/v1/tours', (req, res) => {
 			tours,
 		},
 	})
-})
-// '/api/v1/tours/:id' url中对应内容赋值给:id
-// 路徑中一定要有對應參數，不然會報錯
-// '/api/v1/tours/:id/:y?' 加一個問號，讓參數變爲可選參數
-app.get('/api/v1/tours/:id', (req, res) => {
+}
+
+const getTour = (req, res) => {
 	console.log(req.params)
 	const id = req.params.id * 1
 	const tour = tours.find((el) => el.id === id)
@@ -34,7 +31,6 @@ app.get('/api/v1/tours/:id', (req, res) => {
 			message: 'Invalid ID',
 		})
 	}
-
 	res.status(200).json({
 		status: 'success',
 		// results: tours.length,
@@ -42,9 +38,9 @@ app.get('/api/v1/tours/:id', (req, res) => {
 			tour,
 		},
 	})
-})
+}
 
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
 	// console.log(req.body)
 	// 为新的tours标记id，合并到请求体中，将这个请求的内容放入tours中
 	const newId = tours[tours.length - 1].id + 1
@@ -64,10 +60,8 @@ app.post('/api/v1/tours', (req, res) => {
 			})
 		}
 	)
-})
-
-// patch
-app.patch('/api/v1/tours/:id', (req, res) => {
+}
+const updateTour = (req, res) => {
 	if (req.params.id * 1 > tours.length) {
 		return res.status(404).json({
 			status: 'fail',
@@ -80,10 +74,8 @@ app.patch('/api/v1/tours/:id', (req, res) => {
 			tour: '<Update tour here...>',
 		},
 	})
-})
-
-//delete
-app.delete('/api/v1/tours/:id', (req, res) => {
+}
+const deleteTour = (req, res) => {
 	if (req.params.id * 1 > tours.length) {
 		return res.status(404).json({
 			status: 'fail',
@@ -94,7 +86,21 @@ app.delete('/api/v1/tours/:id', (req, res) => {
 		status: 'success',
 		data: null,
 	})
-})
+}
+// v1 指定api版本
+// app.get('/api/v1/tours', getAllTours)
+// '/api/v1/tours/:id' url中对应内容赋值给:id
+// 路徑中一定要有對應參數，不然會報錯
+// '/api/v1/tours/:id/:y?' 加一個問號，讓參數變爲可選參數
+// app.get('/api/v1/tours/:id', getTour)
+// app.post('/api/v1/tours', createTour)
+// patch
+// app.patch('/api/v1/tours/:id', updateTour)
+//delete
+// app.delete('/api/v1/tours/:id', deleteTour)
+
+app.route('/api/v1/tours').get(getAllTours).post(createTour)
+app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour)
 const port = 3000
 app.listen(port, () => {
 	console.log(`App running on port ${port}...`)
