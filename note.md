@@ -325,3 +325,25 @@ request response cycle: request --> middleware stack --> sending response
 
 通常定義全局中間件在所有的路由處理程序之前
 
+
+
+## 62 create and mount mutiply routers
+
+```js
+const tourRouter = express.Router()
+const userRouter = express.Router()
+
+tourRouter.route('/').get(getAllTours).post(createTour)
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour)
+
+userRouter.route('/').get(getAllusers).post(createUser)
+userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
+
+// mounting the router
+// tourRoute only runs on '/api/v1/tours'
+app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
+app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
+```
+
+
+
