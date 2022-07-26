@@ -308,3 +308,20 @@ app.get('/api/v1/tours/:id', (req, res) => {
 201 創建成功
 
 204 沒有内容
+
+
+
+## 57 中間件 request-response cycle
+
+middleware could manipulate the request or the response object, usually is mostly about the request.
+
+
+
+request response cycle: request --> middleware stack --> sending response
+
+
+
+中間件在代碼中的位置很重要
+
+通常定義全局中間件在所有的路由處理程序之前
+

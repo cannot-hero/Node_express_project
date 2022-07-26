@@ -5,14 +5,23 @@ const app = express()
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
 app.use(express.json()) // 可以获取请求体
-
+app.use((req, res, next) => {
+	console.log('Welcome to middleware 😉')
+	next()
+})
+app.use((req, res, next) => {
+	req.requestTime = new Date().toISOString()
+	next()
+})
 const tours = JSON.parse(
 	fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 )
 
 const getAllTours = (req, res) => {
+	console.log(req.requestTime)
 	res.status(200).json({
 		status: 'success',
+		requestAt: req.requestTime,
 		results: tours.length,
 		data: {
 			tours,
