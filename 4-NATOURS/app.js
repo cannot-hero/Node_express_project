@@ -1,10 +1,15 @@
 const fs = require('fs')
 const express = require('express')
+const morgan = require('morgan')
 const app = express()
 
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
+// 1. MIDDLEWARE
+app.use(morgan('dev'))
+
 app.use(express.json()) // 可以获取请求体
+
 app.use((req, res, next) => {
 	console.log('Welcome to middleware 😉')
 	next()
@@ -17,6 +22,7 @@ const tours = JSON.parse(
 	fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 )
 
+// 2. ROUTE handlers
 const getAllTours = (req, res) => {
 	console.log(req.requestTime)
 	res.status(200).json({
@@ -108,8 +114,11 @@ const deleteTour = (req, res) => {
 //delete
 // app.delete('/api/v1/tours/:id', deleteTour)
 
+// 3. ROUTE
 app.route('/api/v1/tours').get(getAllTours).post(createTour)
 app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour)
+
+// 4. START SERVER
 const port = 3000
 app.listen(port, () => {
 	console.log(`App running on port ${port}...`)
