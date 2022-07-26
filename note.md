@@ -276,3 +276,32 @@ restful api中，不指定id，数据库会配相应的id
 ## 53 responding to URL Parameters
 
 定义一个可以接收变量的路由
+
+```js
+app.use(express.json()) // 可以获取请求体
+...
+// '/api/v1/tours/:id' url中对应内容赋值给:id
+// 路徑中一定要有對應參數，不然會報錯
+// '/api/v1/tours/:id/:y?' 加一個問號，讓參數變爲可選參數
+app.get('/api/v1/tours/:id', (req, res) => {
+	console.log(req.params)
+	const id = req.params.id * 1
+	const tour = tours.find((el) => el.id === id)
+	// if (id > tours.length) {
+	if (!tour) {
+		return res.status(404).json({
+			status: 'fail',
+			message: 'Invalid ID',
+		})
+	}
+
+	res.status(200).json({
+		status: 'success',
+		// results: tours.length,
+		data: {
+			tour,
+		},
+	})
+})
+```
+
