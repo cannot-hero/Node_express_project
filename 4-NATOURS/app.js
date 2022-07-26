@@ -102,6 +102,36 @@ const deleteTour = (req, res) => {
 		data: null,
 	})
 }
+const getAllusers = (req, res) => {
+	res.status(500).json({
+		statues: 'error',
+		message: 'This route is not yet defined!',
+	})
+}
+const getUser = (req, res) => {
+	res.status(500).json({
+		statues: 'error',
+		message: 'This route is not yet defined!',
+	})
+}
+const createUser = (req, res) => {
+	res.status(500).json({
+		statues: 'error',
+		message: 'This route is not yet defined!',
+	})
+}
+const updateUser = (req, res) => {
+	res.status(500).json({
+		statues: 'error',
+		message: 'This route is not yet defined!',
+	})
+}
+const deleteUser = (req, res) => {
+	res.status(500).json({
+		statues: 'error',
+		message: 'This route is not yet defined!',
+	})
+}
 // v1 指定api版本
 // app.get('/api/v1/tours', getAllTours)
 // '/api/v1/tours/:id' url中对应内容赋值给:id
@@ -115,9 +145,19 @@ const deleteTour = (req, res) => {
 // app.delete('/api/v1/tours/:id', deleteTour)
 
 // 3. ROUTE
-app.route('/api/v1/tours').get(getAllTours).post(createTour)
-app.route('/api/v1/tours/:id').get(getTour).patch(updateTour).delete(deleteTour)
+const tourRouter = express.Router()
+const userRouter = express.Router()
 
+tourRouter.route('/').get(getAllTours).post(createTour)
+tourRouter.route('/:id').get(getTour).patch(updateTour).delete(deleteTour)
+
+userRouter.route('/').get(getAllusers).post(createUser)
+userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
+
+// mounting the router
+// tourRoute only runs on '/api/v1/tours'
+app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
+app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
 // 4. START SERVER
 const port = 3000
 app.listen(port, () => {
