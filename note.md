@@ -362,3 +362,36 @@ model view controller
 MVC 处理函数称为controller
 
 把express相关的放在一个文件，server相关的放在一个文件
+
+
+
+## 63 param middleware
+
+```js
+const router = express.Router()
+
+router.param('id', (req, res, next, val) => {
+	console.log(`Tour id is ${id}`)
+	next()
+})
+```
+
+每一个路由都是一个mini  sub-application one for each resource
+
+```js
+// 检查ID是否超限
+exports.checkID = (req, res, next, val) => {
+	console.log(`Tour id is ${val}`)
+	if (req.params.id * 1 > tours.length) {
+		return res.status(404).json({
+			status: 'fail',
+			message: 'Invalid ID',
+		})
+	}
+	next()
+}
+```
+
+express的思想， 应该尽量用中间件，所以这里用了
+
+```router.param('id', callback(req,res,next,val))```
