@@ -395,3 +395,13 @@ exports.checkID = (req, res, next, val) => {
 express的思想， 应该尽量用中间件，所以这里用了
 
 ```router.param('id', callback(req,res,next,val))```
+
+## 64 chaining multiple middleware functions
+
+
+
+## 65 静态文件托管
+
+静态文件：目前无法用所有路径访问的文件  from folder not from route
+
+如果想用浏览器访问文件，就得用express中间件

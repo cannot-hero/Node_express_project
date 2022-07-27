@@ -9,9 +9,9 @@ const app = express()
 // in the middle of request and response
 // 1. MIDDLEWARE
 app.use(morgan('dev'))
-
 app.use(express.json()) // 可以获取请求体
-
+// 静态文件托管  托管public下的文件
+app.use(express.static(`${__dirname}/public`))
 app.use((req, res, next) => {
 	console.log('Welcome to middleware 😉')
 	next()
