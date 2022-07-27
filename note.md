@@ -342,8 +342,23 @@ userRouter.route('/:id').get(getUser).patch(updateUser).delete(deleteUser)
 // mounting the router
 // tourRoute only runs on '/api/v1/tours'
 app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
-app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
+app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouters
 ```
 
 
 
+## 62 better file structure
+
+create不同的路由器 让每一个资源和关注点分离
+
+
+
+app.js 入口文件通常用于中间件的声明
+
+
+
+model view controller
+
+MVC 处理函数称为controller
+
+把express相关的放在一个文件，server相关的放在一个文件

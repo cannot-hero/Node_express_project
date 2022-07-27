@@ -1,4 +1,3 @@
-const fs = require('fs')
 const express = require('express')
 const morgan = require('morgan')
 
@@ -43,7 +42,4 @@ app.use((req, res, next) => {
 app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
 app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
 // 4. START SERVER
-const port = 3000
-app.listen(port, () => {
-	console.log(`App running on port ${port}...`)
-})
+module.exports = app
