@@ -8,7 +8,9 @@ const app = express()
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
 // 1. MIDDLEWARE
-app.use(morgan('dev'))
+if (process.env.NODE_ENV === 'development') {
+	app.use(morgan('dev'))
+}
 app.use(express.json()) // 可以获取请求体
 // 静态文件托管  托管public下的文件
 app.use(express.static(`${__dirname}/public`))
