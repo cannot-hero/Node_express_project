@@ -39,6 +39,20 @@ const tourSchema = new mongoose.Schema({
     }
 })
 const Tour = mongoose.model('Tour', tourSchema)
+// testTour是Tour Model 的一个实例
+const testTour = new Tour({
+    name: 'The Park Hiker',
+    price: 99
+})
+// save方法 保存到tours collection in the database
+testTour
+    .save()
+    .then(doc => {
+        console.log(doc)
+    })
+    .catch(err => {
+        console.log('Error!😟', err)
+    })
 // console.log(process.env.NODE_ENV)
 const port = process.env.PORT || 3000
 app.listen(port, () => {
