@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable import/newline-after-import */
 const express = require('express')
 const morgan = require('morgan')
 
@@ -9,18 +11,18 @@ const app = express()
 // in the middle of request and response
 // 1. MIDDLEWARE
 if (process.env.NODE_ENV === 'development') {
-	app.use(morgan('dev'))
+  app.use(morgan('dev'))
 }
 app.use(express.json()) // 可以获取请求体
 // 静态文件托管  托管public下的文件
 app.use(express.static(`${__dirname}/public`))
 app.use((req, res, next) => {
-	console.log('Welcome to middleware 😉')
-	next()
+  console.log('Welcome to middleware 😉')
+  next()
 })
 app.use((req, res, next) => {
-	req.requestTime = new Date().toISOString()
-	next()
+  req.requestTime = new Date().toISOString()
+  next()
 })
 
 // 2. ROUTE handlers

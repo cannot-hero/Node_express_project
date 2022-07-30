@@ -405,3 +405,51 @@ express的思想， 应该尽量用中间件，所以这里用了
 静态文件：目前无法用所有路径访问的文件  from folder not from route
 
 如果想用浏览器访问文件，就得用express中间件
+
+```js
+// 静态文件托管  托管public下的文件
+app.use(express.static(`${__dirname}/public`))
+```
+
+## 69 MONGODB
+
+
+
+> DATABASE  ----  COLLECTIONS (TABLE)  -----DOCUMENTS(ROWS)
+>
+> ​                             blog / users / reviews             post user review
+
+一个数据库可以包含一个或多个集合
+
+每个集合可以包含一个或多个文档
+
+in a relationship database, a document would be a row in a table
+
+each document contains the data about one single entity（包含一个单一实体，一篇博文，一个用户或一个评论）
+
+
+
+mongodb将数据存在文档中 而不是像传统数据库中一行 （NoSQL）
+
+用数据填充之前，不需要定义文档数据模式(schema)
+
+
+
+```sql
+use natours-test       //切换到某一数据库
+db.tours.insertMany([{name:"sea explorer",rating:4.2,price:4.7},{name:"Snow advancer", price:999, rating:4.6}])  // 插入多条
+db.tours.find()
+show dbs
+show collections  // 展示集合 
+// find
+db.tour.find({name:"snow"})
+db.tour.find({price:{$lte:500}}) // lte  less than or equal
+db.tour.find({price:{$lte:500}, rating:{$gt:3}})
+db.tour.find({$or:[{price:{$lte:500}}, {rating:{$gt:3}}]})
+// update  先找到要更新的document  然后修改对应属性
+db.tour.updateOne({name:"snow"},{$set:{price:999}}) // 只会更新第一个匹配到的
+db.tour.updateMany({price:{$gt:500}},{rating:{$gt:4.5}},{$set:{premium: true}})
+db.tour.deleteMany({rating: {$lt:4.0}})
+db.tour.deleteMany({}) // 全删咯
+```
+
