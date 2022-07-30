@@ -482,3 +482,17 @@ const tourSchema = new mongoose.Schema({
 const Tour = mongoose.model('Tour', tourSchema)
 ```
 
+## 85 MVC架构 architecture
+
+> model business logic (concern about everything about applicaition data) 数据库， 模型
+>
+> view  presentation logic (handle applications request, interact with models, and send back responses to the client)
+>
+> controller  application logic （视图层基本上由用于生成视图的模板）
+
+FAT models THIN controller
+
+
+
+模型定义好之后用在controller中
+

@@ -6,13 +6,12 @@ const {
     createTour,
     updateTour,
     deleteTour,
-    checkID,
     checkBody
 } = require('../controllers/tourController')
 
 const router = express.Router()
 // val 是id的值
-router.param('id', checkID)
+// router.param('id', checkID)
 // create a new middleware
 // check if body contains the name and price property
 // if not send back 400
