@@ -453,3 +453,32 @@ db.tour.deleteMany({rating: {$lt:4.0}})
 db.tour.deleteMany({}) // 全删咯
 ```
 
+## 82 Mongoose
+
+mongoose schema是数据进行建模的地方，描述数据结构，默认值和验证
+
+mongoose model  允许对数据库创建删除更新 crud
+
+
+
+mongoose is all about models, 模型就像蓝图 用于创建文档
+
+```js
+const tourSchema = new mongoose.Schema({
+    name: {
+        type: String,
+        required: [true, 'A tour must have a name!'],
+        unique: true
+    },
+    rating: {
+        type: Number,
+        default: 4.5
+    },
+    price: {
+        type: Number,
+        required: [true, 'A tour must have a price']
+    }
+})
+const Tour = mongoose.model('Tour', tourSchema)
+```
+
