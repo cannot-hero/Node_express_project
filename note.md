@@ -496,3 +496,48 @@ FAT models THIN controller
 
 模型定义好之后用在controller中
 
+## 87 create document
+
+method 1
+
+```js
+const tour = new Tour({})
+tour.save()
+```
+
+method 2
+
+```js
+Tour.create({}).then()
+```
+
+aync await 配合 try catch
+
+try  先根据req在数据库中创建相应的document，然后将创建后的东西返回给res
+
+catch 进行错误捕获
+
+```js
+exports.createTour = async (req, res) => {
+    try {
+        // const newTour = new Tour({})
+        // newTour.save()
+        // 写入数据库
+        const newTour = await Tour.create(req.body)
+        res.status(201).json({
+            status: 'success',
+            data: {
+                tour: newTour
+            }
+        })
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Invalid data sent!😟'
+        })
+    }
+}
+```
+
+## 88 reading documents
+
