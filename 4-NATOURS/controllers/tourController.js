@@ -60,17 +60,38 @@ exports.createTour = async (req, res) => {
         })
     }
 }
-exports.updateTour = (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        data: {
-            tour: '<Update tour here...>'
-        }
-    })
+exports.updateTour = async (req, res) => {
+    try {
+        // 先找到对应document，然后在做修改         id            对应的修改
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            new: true, // 返回更新后的值
+            // 重新验证
+            runValidators: true
+        })
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Invalid data sent!😟'
+        })
+    }
 }
-exports.deleteTour = (req, res) => {
-    res.status(204).json({
-        status: 'success',
-        data: null
-    })
+exports.deleteTour = async (req, res) => {
+    try {
+        await Tour.findByIdAndDelete(req.params.id)
+        res.status(204).json({
+            status: 'success',
+            data: null
+        })
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Invalid data sent!😟'
+        })
+    }
 }

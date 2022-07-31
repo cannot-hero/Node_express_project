@@ -564,3 +564,29 @@ exports.getTour = async (req, res) => {
 }
 ```
 
+## 89 updating documents
+
+```js
+exports.updateTour = async (req, res) => {
+    try {
+        // 先找到对应document，然后在做修改              id          对应的修改
+        const tour = await Tour.findByIdAndUpdate(req.params.id, req.body, {
+            new: true, // 返回更新后的值
+            // 重新验证
+            runValidators: true
+        })
+        res.status(200).json({
+            status: 'success',
+            data: {
+                tour
+            }
+        })
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: 'Invalid data sent!😟'
+        })
+    }
+}
+```
+
