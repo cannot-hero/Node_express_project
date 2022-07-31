@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 //server文件处理 database configurations, error handling staff or environment varables
 const dotenv = require('dotenv')
-const app = require('./app')
 
 dotenv.config({ path: `./${process.env.NODE_ENV}.env` })
+const app = require('./app')
 
 const DB = process.env.DATABASE.replace(
     '<PASSWORD>',
