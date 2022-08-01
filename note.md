@@ -609,3 +609,51 @@ exports.deleteTour = async (req, res) => {
 }
 ```
 
+## 96 sorting
+
+find返回的其实是一个query
+
+```js
+        let query = Tour.find(JSON.parse(queryStr))
+        // {difficulty : 'easy', duration:{$gte : 5}}
+        // 2) Sorting
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(',').join(' ')
+            query = query.sort(sortBy)
+            // second criteria  query.sort('price ratingsAverage')
+        } else {
+            // 默认排序
+            query = query.sort('-createAt')
+        }
+        // EXCUTE QUERY
+        const tours = await query
+```
+
+## 97 字段限制 limiting fields
+
+可以在schema中进行限制
+
+```js
+const tourSchema = new mongoose.Schema({
+        createAt: {
+        type: Date,
+        default: Date.now(),
+        select: false
+    }
+})
+```
+
+在tourController中进行限制
+
+```js
+// 3) Field limit
+if (req.query.fields) {
+    const fields = req.query.fields.split(',').join(' ')
+    query = query.select(fields)
+} else {
+    query = query.select('-__v')
+}
+// EXCUTE QUERY
+const tours = await query
+```
+

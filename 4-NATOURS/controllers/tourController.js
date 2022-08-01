@@ -8,19 +8,35 @@ exports.getAllTours = async (req, res) => {
     try {
         console.log(req.query)
         // BUIKD QUERY
-        // 1) Filtering
+        // 1A) Filtering
         const queryObj = { ...req.query }
         const excludeFields = ['page', 'limit', 'sort', 'fields']
         excludeFields.forEach(el => delete queryObj[el])
-        // 2) Advanced filtering
+        // 1B) Advanced filtering
         let queryStr = JSON.stringify(queryObj)
         queryStr = queryStr.replace(
             /\b(gte|gt|lte|lt)\b/g,
             match => `$${match}`
         ) // 正则表达式
-        console.log(JSON.parse(queryStr))
-        const query = Tour.find(JSON.parse(queryStr))
+        // console.log(JSON.parse(queryStr))
+        let query = Tour.find(JSON.parse(queryStr))
         // {difficulty : 'easy', duration:{$gte : 5}}
+        // 2) Sorting
+        if (req.query.sort) {
+            const sortBy = req.query.sort.split(',').join(' ')
+            query = query.sort(sortBy)
+            // second criteria  query.sort('price ratingsAverage')
+        } else {
+            // 默认排序
+            query = query.sort('-createAt')
+        }
+        // 3) Field limit
+        if (req.query.fields) {
+            const fields = req.query.fields.split(',').join(' ')
+            query = query.select(fields)
+        } else {
+            query = query.select('-__v')
+        }
         // EXCUTE QUERY
         const tours = await query
         // const query = Tour.find()
