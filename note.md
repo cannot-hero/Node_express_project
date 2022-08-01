@@ -657,3 +657,20 @@ if (req.query.fields) {
 const tours = await query
 ```
 
+## 97 pagination 
+
+```js
+// 4) pagination
+const page = req.query.page * 1 || 1
+const limit = req.query.limit * 1 || 100
+const skip = (page - 1) * limit
+// page=2&limit=10  1-10 page 1 11-20 page 2
+query = query.skip(skip).limit(limit)
+// 判断是否请求超出
+if (req.query.page) {
+    const numTours = await Tour.countDocuments()
+    if (skip >= numTours) throw new Error('This page does not exist')
+}
+// query.sort().select().skip().limit()
+```
+
