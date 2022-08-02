@@ -1,5 +1,5 @@
 const Tour = require('./../models/toursModel')
-
+const APIFeatures = require('./../utils/apiFeatures')
 // const tours = JSON.parse(
 //     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // )
@@ -9,53 +9,16 @@ exports.aliasTopTours = (req, res, next) => {
     req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
     next()
 }
+
 exports.getAllTours = async (req, res) => {
     try {
-        console.log(req.query)
-        // BUIKD QUERY
-        // 1A) Filtering
-        const queryObj = { ...req.query }
-        const excludeFields = ['page', 'limit', 'sort', 'fields']
-        excludeFields.forEach(el => delete queryObj[el])
-        // 1B) Advanced filtering
-        let queryStr = JSON.stringify(queryObj)
-        queryStr = queryStr.replace(
-            /\b(gte|gt|lte|lt)\b/g,
-            match => `$${match}`
-        ) // 正则表达式
-        // console.log(JSON.parse(queryStr))
-        let query = Tour.find(JSON.parse(queryStr))
-        // {difficulty : 'easy', duration:{$gte : 5}}
-        // 2) Sorting
-        if (req.query.sort) {
-            const sortBy = req.query.sort.split(',').join(' ')
-            query = query.sort(sortBy)
-            // second criteria  query.sort('price ratingsAverage')
-        } else {
-            // 默认排序
-            query = query.sort('-createAt')
-        }
-        // 3) Field limit
-        if (req.query.fields) {
-            const fields = req.query.fields.split(',').join(' ')
-            query = query.select(fields)
-        } else {
-            query = query.select('-__v')
-        }
-        // 4) pagination
-        const page = req.query.page * 1 || 1
-        const limit = req.query.limit * 1 || 100
-        const skip = (page - 1) * limit
-        // page=2&limit=10  1-10 page 1 11-20 page 2
-        query = query.skip(skip).limit(limit)
-        // 判断是否请求超出
-        if (req.query.page) {
-            const numTours = await Tour.countDocuments()
-            if (skip >= numTours) throw new Error('This page does not exist')
-        }
-        // query.sort().select().skip().limit()
         // EXCUTE QUERY
-        const tours = await query
+        const features = new APIFeatures(Tour.find(), req.query)
+            .filter()
+            .sort()
+            .limitFields()
+            .paginate()
+        const tours = await features.query
         // const query = Tour.find()
         //     .where('duration')
         //     .equals(5)
