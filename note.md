@@ -674,3 +674,19 @@ if (req.query.page) {
 // query.sort().select().skip().limit()
 ```
 
+## 98 aliasing
+
+利用中间件，实现功能的复用
+
+```js
+// tourController.js
+exports.aliasTopTours = (req, res, next) => {
+    req.query.limit = '5'
+    req.query.sort = '-ratingsAverage,price'
+    req.query.fields = 'name,price,ratingsAverage,summary,difficulty'
+    next()
+}
+//server.js                       中间件的链式调用
+router.route('/top-5-cheap').get(aliasTopTours, getAllTours)
+```
+

@@ -5,7 +5,8 @@ const {
     getTour,
     createTour,
     updateTour,
-    deleteTour
+    deleteTour,
+    aliasTopTours
 } = require('../controllers/tourController')
 
 const router = express.Router()
@@ -15,6 +16,7 @@ const router = express.Router()
 // check if body contains the name and price property
 // if not send back 400
 // add it to the post handle stack
+router.route('/top-5-cheap').get(aliasTopTours, getAllTours)
 router
     .route('/')
     .get(getAllTours)
