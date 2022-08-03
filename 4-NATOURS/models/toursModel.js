@@ -1,57 +1,75 @@
 const mongoose = require('mongoose')
 
-const tourSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'A tour must have a name!'],
-        unique: true,
-        trim: true
+// Schema 不仅可以传入相关定义， 也可以传schema的配置对象
+const tourSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [true, 'A tour must have a name!'],
+            unique: true,
+            trim: true
+        },
+        duration: {
+            type: Number,
+            required: [true, 'A tour must have a duration']
+        },
+        maxGroupSize: {
+            type: Number,
+            required: [true, 'A tour must have a group size']
+        },
+        difficulty: {
+            type: String,
+            required: [true, 'A tour must have a difficulty']
+        },
+        ratingsAverage: {
+            type: Number,
+            default: 4.5
+        },
+        ratingsQuantity: {
+            type: Number,
+            default: 0
+        },
+        price: {
+            type: Number,
+            required: [true, 'A tour must have a price']
+        },
+        priceDiscount: Number,
+        summary: {
+            type: String,
+            trim: true,
+            required: [true, 'A tour must have a description']
+        },
+        description: {
+            type: String,
+            trim: true
+        },
+        imageCover: {
+            type: String,
+            required: [true, 'A tour must have a cover image']
+        },
+        images: [String],
+        createAt: {
+            type: Date,
+            default: Date.now(),
+            select: false
+        },
+        startDates: [Date]
     },
-    duration: {
-        type: Number,
-        required: [true, 'A tour must have a duration']
-    },
-    maxGroupSize: {
-        type: Number,
-        required: [true, 'A tour must have a group size']
-    },
-    difficulty: {
-        type: String,
-        required: [true, 'A tour must have a difficulty']
-    },
-    ratingsAverage: {
-        type: Number,
-        default: 4.5
-    },
-    ratingsQuantity: {
-        type: Number,
-        default: 0
-    },
-    price: {
-        type: Number,
-        required: [true, 'A tour must have a price']
-    },
-    priceDiscount: Number,
-    summary: {
-        type: String,
-        trim: true,
-        required: [true, 'A tour must have a description']
-    },
-    description: {
-        type: String,
-        trim: true
-    },
-    imageCover: {
-        type: String,
-        required: [true, 'A tour must have a cover image']
-    },
-    images: [String],
-    createAt: {
-        type: Date,
-        default: Date.now(),
-        select: false
-    },
-    startDates: [Date]
+    {
+        // schema的配置对象 toJSON是指数据以JSON传出时 使用virtuals
+        // 使用Object输出时，适用virtuals
+        toJSON: { virtuals: true },
+        toObject: { virtuals: true }
+    }
+)
+// get 相当于定义了一个getter  getter不能用箭头函数(arrow function)，因为要用到this regular function
+tourSchema.virtual('durationWeeks').get(function() {
+    return this.duration / 7
+})
+// document middleware: runs before .save() and .create
+tourSchema.pre('save', function() {
+    // this 指向当前处理的文件
+    console.log(this)
 })
 const Tour = mongoose.model('Tour', tourSchema)
 

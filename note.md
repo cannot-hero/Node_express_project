@@ -795,3 +795,54 @@ exports.getTourStats = async (req, res) => {
 }
 ```
 
+
+
+
+
+aggregate operator 
+
+> Operator expressions are similar to functions that take arguments. In general, these expressions take an array of arguments and have the following form:
+
+```sql
+{ <operator>: [ <argument1>, <argument2> ... ] }
+```
+
+> If operator accepts a single argument, you can omit the outer array designating the argument list:
+
+```sql
+{ <operator>: <argument> }
+```
+
+## 102  Virtual properties
+
+虚拟属性，可以定义在schema中，但是不会被保存在数据库中
+
+不会持久在数据库中，只有获得数据后它才会出现
+
+对于可以相互派生的字段（英里 -> 公里），
+
+
+
+虚拟属性不能用在query中，因为虚拟属性不是数据库的一部分
+
+
+
+业务逻辑和程序逻辑要尽可能分开
+
+Fat models thin controllers
+
+模型中有尽量多的业务逻辑
+
+控制器中业务逻辑尽量少
+
+
+
+## 103 Mongoose中间件
+
+四种类型 ducument, query, aggregate and model middleware
+
+### document middleware
+
+act on the current processed document
+
+可以定义函数在某个事件前后
