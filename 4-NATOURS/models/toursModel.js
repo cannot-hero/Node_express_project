@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const slugify = require('slugify')
 
 // Schema 不仅可以传入相关定义， 也可以传schema的配置对象
 const tourSchema = new mongoose.Schema(
@@ -9,6 +10,7 @@ const tourSchema = new mongoose.Schema(
             unique: true,
             trim: true
         },
+        slug: String,
         duration: {
             type: Number,
             required: [true, 'A tour must have a duration']
@@ -67,10 +69,22 @@ tourSchema.virtual('durationWeeks').get(function() {
     return this.duration / 7
 })
 // document middleware: runs before .save() and .create
-tourSchema.pre('save', function() {
+tourSchema.pre('save', function(next) {
     // this 指向当前处理的文件
-    console.log(this)
+    this.slug = slugify(this.name, { lower: true })
+    next()
 })
+
+// tourSchema.pre('save', function(next) {
+//     console.log('Will save documents ...')
+//     next()
+// })
+// // 可以访问到刚刚保存到数据库的document
+// tourSchema.post('save', function(doc, next) {
+//     //post middleware functions are excuted after the pre middleware functions are completed
+//     console.log(doc)
+//     next()
+// })
 const Tour = mongoose.model('Tour', tourSchema)
 
 module.exports = Tour
