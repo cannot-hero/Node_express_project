@@ -884,3 +884,25 @@ tourSchema.post('save', function(doc, next) {
 })
 ```
 
+### query middleware
+
+```js
+// QUERY MIDDLEWARE
+// this middleware 适用于find 不适用于findOne
+// tourSchema.pre('find', function(next) {
+// 用正则表达式来匹配find开头的
+tourSchema.pre(/^find/, function(next) {
+    // this will point to current query, not current document
+    this.find({ secretTour: { $ne: true } })
+    this.start = Date.now()
+    // 让通过查询的都是普通查询
+    next()
+})
+
+tourSchema.post(/^find/, function(docs, next) {
+    console.log(`Quert took ${Date.now() - this.start} milliseconds`)
+    console.log(docs)
+    next()
+})
+```
+
