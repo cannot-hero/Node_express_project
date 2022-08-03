@@ -690,3 +690,108 @@ exports.aliasTopTours = (req, res, next) => {
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours)
 ```
 
+## 99 refactoring
+
+class
+
+```js
+class APIFeatures {
+    constructor(query, queryString) {
+        this.query = query
+        this.queryString = queryString
+    }
+
+    filter() {
+        const queryObj = { ...this.queryString }
+        const excludeFields = ['page', 'limit', 'sort', 'fields']
+        excludeFields.forEach(el => delete queryObj[el])
+        // 1B) Advanced filtering
+        let queryStr = JSON.stringify(queryObj)
+        queryStr = queryStr.replace(
+            /\b(gte|gt|lte|lt)\b/g,
+            match => `$${match}`
+        ) // 正则表达式
+        // console.log(JSON.parse(queryStr))
+        this.query.find(JSON.parse(queryStr))
+        // let query = Tour.find(JSON.parse(queryStr))
+        return this
+    }
+
+    sort() {
+        if (this.queryString.sort) {
+            const sortBy = this.queryString.sort.split(',').join(' ')
+            this.query = this.query.sort(sortBy)
+            // second criteria  query.sort('price ratingsAverage')
+        } else {
+            // 默认排序
+            this.query = this.query.sort('-createAt')
+        }
+        return this
+    }
+
+    limitFields() {
+        if (this.queryString.fields) {
+            const fields = this.queryString.fields.split(',').join(' ')
+            this.query = this.query.select(fields)
+        } else {
+            this.query = this.query.select('-__v')
+        }
+
+        return this
+    }
+
+    paginate() {
+        const page = this.queryString.page * 1 || 1
+        const limit = this.queryString.limit * 1 || 100
+        const skip = (page - 1) * limit
+        // page=2&limit=10  1-10 page 1 11-20 page 2
+        this.query = this.query.skip(skip).limit(limit)
+        return this
+    }
+}
+
+module.exports = APIFeatures
+
+```
+
+## 100 mongoDB aggregation pipeline
+
+数据聚合
+
+先match 再分组 再发送
+
+```js
+exports.getTourStats = async (req, res) => {
+    try {
+        // aggregate输入一个pipeline的[]
+        const stats = await Tour.aggregate([
+            {
+                $match: { ratingsAverage: { $gte: 4.5 } }
+            },
+            {
+                $group: {
+                    _id: { $toUpper: '$difficulty' }, // 声明根据什么字段进行分组
+                    numTours: { $sum: 1 }, //相当于计数器，每经过这个管道就 + 1
+                    numRatings: { $sum: '$ratingsQuantity' },
+                    avgRating: { $avg: '$ratingsAverage' },
+                    avgPrice: { $avg: '$price' },
+                    minPrice: { $min: '$price' },
+                    maxPrice: { $max: '$price' }
+                }
+            }
+        ])
+        res.status(200).json({
+            status: 'success',
+            data: {
+                stats
+            }
+        })
+    } catch (err) {
+        res.status(400).json({
+            status: 'fail',
+            message: err
+        })
+    }
+}
+```
+
