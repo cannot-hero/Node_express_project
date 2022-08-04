@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const slugify = require('slugify')
+const validator = require('validator')
 
 // Schema 不仅可以传入相关定义， 也可以传schema的配置对象
 const tourSchema = new mongoose.Schema(
@@ -17,6 +18,7 @@ const tourSchema = new mongoose.Schema(
                 10,
                 'A tour name must have more or equal then 10 characters'
             ]
+            // validate: [validator.isAlpha, 'Tour name must only have charactors']
         },
         slug: String,
         duration: {
@@ -51,7 +53,17 @@ const tourSchema = new mongoose.Schema(
             type: Number,
             required: [true, 'A tour must have a price']
         },
-        priceDiscount: Number,
+        priceDiscount: {
+            type: Number,
+            validate: {
+                message:
+                    'Discount price ({VALUE}) should be below than regular price',
+                validator: function(val) {
+                    // this 只会在创建一个新的document时有用，在更新时没有用
+                    return val < this.price
+                }
+            }
+        },
         summary: {
             type: String,
             trim: true,
