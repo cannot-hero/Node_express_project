@@ -104,10 +104,17 @@ tourSchema.pre(/^find/, function(next) {
 
 tourSchema.post(/^find/, function(docs, next) {
     console.log(`Quert took ${Date.now() - this.start} milliseconds`)
-    console.log(docs)
     next()
 })
 
+// AGGREGATION MIDDLEWARE
+tourSchema.pre('aggregate', function(next) {
+    // 过滤掉secret tour  只需再添加一个match stage pipeline()返回一个数组
+    this.pipeline().unshift({ $match: { secretTour: { $ne: true } } })
+    // this point to the current aggregation object
+    console.log(this.pipeline())
+    next()
+})
 const Tour = mongoose.model('Tour', tourSchema)
 
 module.exports = Tour
