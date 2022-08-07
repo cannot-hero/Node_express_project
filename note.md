@@ -977,6 +977,8 @@ global error handling middleware allows a nice seperarion of concerns.
 
 ## 112 implement a global error handling middleware
 
+全局错误捕获在app.js中完成
+
 ```js
 app.all('*', (req, res, next) => {
     // res.status(404).json({
@@ -998,5 +1000,21 @@ app.use((err, req, res, next) => {
         message: err.message
     })
 })
+```
+
+## 114 catch error in async functions
+
+try catch一直在重复
+
+将try catch放在更高级的层次上（另外一个函数中），使用了闭包
+
+```js
+// 闭包
+module.exports = fn => {
+    return (req, res, next) => {
+        // 因为async函数返回一个Promise可以用catch
+        fn(req, res, next).catch(next)
+    }
+}
 ```
 
