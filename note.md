@@ -939,3 +939,19 @@ function return true or false
 ## 109 错误处理
 
 ndb
+
+## 110 unhandled route
+
+```js
+app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
+app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
+// 上面两个路由都没匹配到的话 就到下面这个路由
+// .all could run all the verbs in HTTP methods
+app.all('*', (req, res) => {
+    res.status(404).json({
+        status: 'fail',
+        message: `Can't find ${req.originalUrl} on this server !`
+    })
+})
+```
+
