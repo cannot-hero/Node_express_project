@@ -2,7 +2,8 @@
 /* eslint-disable import/newline-after-import */
 const express = require('express')
 const morgan = require('morgan')
-
+const AppError = require('./utils/appError')
+const globalErrorHandler = require('./controllers/errorController')
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const app = express()
@@ -45,25 +46,14 @@ app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tour
 // 上面两个路由都没匹配到的话 就到下面这个路由
 // .all could run all the verbs in HTTP methods
 app.all('*', (req, res, next) => {
-    // res.status(404).json({
-    //     status: 'fail',
-    //     message: `Can't find ${req.originalUrl} on this server !`
-    // })
-    const err = new Error(`Can't find ${req.originalUrl} on this server !`)
-    err.status = 'fail'
-    err.statusCode = 404
+    // const err = new Error(`Can't find ${req.originalUrl} on this server !`)
+    // err.status = 'fail'
+    // err.statusCode = 404
     // 传递东西给next 他会假设是一个错误，会跳过中间件所有的其他中间件堆栈
     // 并发送我们传入的错误到全局错误处理中间件
-    next(err)
+    next(new AppError(`Can't find ${req.originalUrl} on this server !`, 404))
 })
 
-app.use((err, req, res, next) => {
-    err.statusCode = err.statusCode || 500
-    err.status = err.status || 'error'
-    res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message
-    })
-})
+app.use(globalErrorHandler)
 // 4. START SERVER
 module.exports = app
