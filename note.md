@@ -921,7 +921,7 @@ tourSchema.pre('aggregate', function(next) {
 
 ## 106 validation
 
-## built in validators
+### built in validators
 
 1. 字段格式是否正确
 2. 避免恶意代码
@@ -930,6 +930,12 @@ tourSchema.pre('aggregate', function(next) {
 
 > https://mongoosejs.com/docs/validation.html
 
-## custom validators
+### custom validators
 
 function return true or false
+
+
+
+## 109 错误处理
+
+ndb

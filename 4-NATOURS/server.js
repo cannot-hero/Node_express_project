@@ -2,6 +2,8 @@ const mongoose = require('mongoose')
 //server文件处理 database configurations, error handling staff or environment varables
 const dotenv = require('dotenv')
 
+process.env.NODE_ENV = 'development'
+// process.env.NODE_ENV = 'production'
 dotenv.config({ path: `./${process.env.NODE_ENV}.env` })
 const app = require('./app')
 
