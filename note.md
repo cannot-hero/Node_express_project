@@ -955,3 +955,48 @@ app.all('*', (req, res) => {
 })
 ```
 
+## 111 error handling with express
+
+error types
+
+operational errors:problems that we can predict will happen at some point
+
+依赖用户操作，系统，网络
+
+programming errors
+
+开发错误
+
+
+
+谈论express可以处理的错误主要是指operational errors，因而用错误处理中间件
+
+the goal is all these errors end up in one central error handling middleware.
+
+global error handling middleware allows a nice seperarion of concerns.
+
+## 112 implement a global error handling middleware
+
+```js
+app.all('*', (req, res, next) => {
+    // res.status(404).json({
+    //     status: 'fail',
+    //     message: `Can't find ${req.originalUrl} on this server !`
+    // })
+    const err = new Error(`Can't find ${req.originalUrl} on this server !`)
+    err.status = 'fail'
+    err.statusCode = 404
+    // 传递东西给next 他会假设是一个错误，会跳过中间件所有的其他中间件堆栈
+    // 并发送我们传入的错误到全局错误处理中间件
+    next(err)
+})
+app.use((err, req, res, next) => {
+    err.statusCode = err.statusCode || 500
+    err.status = err.status || 'error'
+    res.status(err.statusCode).json({
+        status: err.status,
+        message: err.message
+    })
+})
+```
+
