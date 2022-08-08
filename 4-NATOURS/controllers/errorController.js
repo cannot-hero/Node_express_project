@@ -7,8 +7,15 @@ const handleCastErrorDB = err => {
 
 const handleDuplicateFieldsDB = err => {
     const value = err.keyValue.name
-    console.log(value)
+    // console.log(value)
     const message = `Duplicate field value: ${value}, please use another one!`
+    return new AppError(message, 400)
+}
+
+const handleValidationErrorDB = err => {
+    const errors = Object.values(err.errors).map(el => el.message)
+    console.log(errors)
+    const message = `Invalid input data. ${errors.join('. ')}`
     return new AppError(message, 400)
 }
 const sendErrDevelopment = (err, res) => {
@@ -55,6 +62,10 @@ module.exports = (err, req, res, next) => {
             error = handleCastErrorDB(error)
         }
         if (error.code === 11000) error = handleDuplicateFieldsDB(error)
+        // 这里注意error.name 是ValidationError
+        if (error.name === 'ValidationError') {
+            error = handleValidationErrorDB(error)
+        }
         sendErrProduction(error, res)
     }
 }
