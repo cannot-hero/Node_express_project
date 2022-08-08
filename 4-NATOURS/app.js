@@ -7,7 +7,7 @@ const globalErrorHandler = require('./controllers/errorController')
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const app = express()
-
+// console.log(process.env.NODE_ENV)
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
 // 1. MIDDLEWARE

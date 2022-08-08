@@ -1019,3 +1019,73 @@ module.exports = fn => {
 ```
 
 ## 115 添加404错误
+
+```js
+exports.getTour = catchAsync(async (req, res, next) => {
+    const tour = await Tour.findById(req.params.id)
+    // 通过发了一个假id 发现await 返回值为null
+    if (!tour) {
+        return next(new AppError('No tour could find with this ID', 404))
+    }
+    // Tour.findOne({_id:req.params.id})
+    res.status(200).json({
+        status: 'success',
+        // results: tours.length,
+        data: {
+            tour
+        }
+    })
+})
+```
+
+## 116 error controller errs during production vs errs during development
+
+
+
+## 118 处理用户操作失误
+
+cast error
+
+```js
+const handleCastErrorDB = err => {
+    const message = `Invalid ${err.path}:${err.value}`
+    return new AppError(message, 400)
+}
+module.exports = (err, req, res, next) => {
+    err.statusCode = err.statusCode || 500
+    err.status = err.status || 'error'
+    // 根据开发环境和生产环境产生不同报错
+    if (process.env.NODE_ENV === 'development') {
+        // console.log(err)
+        sendErrDevelopment(err, res)
+    } else if (process.env.NODE_ENV === 'production') {
+        // a hard copy
+        // let error = { ...err }
+        let error = JSON.parse(JSON.stringify(err))
+        if (error.name === 'CastError') {
+            error = handleCastErrorDB(error)
+        }
+        sendErrProduction(error, res)
+    }
+}
+```
+
+对象的扩展运算符，只会返回参数对象自身的、可枚举的属性，这一点要特别小心，尤其是用于类的实例对象时。”继承的message在原型上，所有并不能由解构赋值
+
+
+
+## 处理duplicate错误
+
+```js
+const handleDuplicateFieldsDB = err => {
+    const value = err.keyValue.name
+    console.log(value)
+    const message = `Duplicate field value: ${value}, please use another one!`
+    return new AppError(message, 400)
+}
+
+
+        if (error.code === 11000) error = handleDuplicateFieldsDB(error)
+        sendErrProduction(error, res)
+```
+
