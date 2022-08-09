@@ -2,6 +2,15 @@ const mongoose = require('mongoose')
 //server文件处理 database configurations, error handling staff or environment varables
 const dotenv = require('dotenv')
 
+// 同步代码的错误捕获
+process.on('uncaughtException', err => {
+    console.log('UNHANDLED EXCEPTION 🥵, shutting down...')
+    console.log(err.name, err.message)
+    // 1 stands for uncaught exception 0 stands for success
+    // process.exit()会立即中断所有请求 running or pending
+    process.exit(1)
+})
+
 // process.env.NODE_ENV = 'development'
 // process.env.NODE_ENV = 'production'
 dotenv.config({ path: `./${process.env.NODE_ENV}.env` })
@@ -33,8 +42,8 @@ const server = app.listen(port, () => {
 
 // last safety net for asynchronous code
 process.on('unhandledRejection', err => {
-    console.log(err.name, err.message)
     console.log('UNHANDLED REJECTION 🥵, shutting down...')
+    console.log(err.name, err.message)
     // 1 stands for uncaught exception 0 stands for success
     // process.exit()会立即中断所有请求 running or pending
     server.close(() => {

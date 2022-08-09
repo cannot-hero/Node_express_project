@@ -1124,3 +1124,18 @@ process.on('unhandledRejection', err => {
 })
 ```
 
+
+
+```js
+// 同步代码的错误捕获
+process.on('uncaughtException', err => {
+    console.log('UNHANDLED EXCEPTION 🥵, shutting down...')
+    console.log(err.name, err.message)
+    // 1 stands for uncaught exception 0 stands for success
+    // process.exit()会立即中断所有请求 running or pending
+    process.exit(1)
+})
+```
+
+
+
