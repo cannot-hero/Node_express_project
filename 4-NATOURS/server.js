@@ -27,6 +27,17 @@ mongoose
 
 // console.log(process.env.NODE_ENV)
 const port = process.env.PORT || 3000
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`App running on port ${port}...`)
+})
+
+// last safety net for asynchronous code
+process.on('unhandledRejection', err => {
+    console.log(err.name, err.message)
+    console.log('UNHANDLED REJECTION 🥵, shutting down...')
+    // 1 stands for uncaught exception 0 stands for success
+    // process.exit()会立即中断所有请求 running or pending
+    server.close(() => {
+        process.exit(1)
+    })
 })

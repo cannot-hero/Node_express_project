@@ -1105,3 +1105,22 @@ const handleValidationErrorDB = err => {
         sendErrProduction(error, res)
 ```
 
+## express 之外的报错
+
+handle unhandled rejections!
+
+事件处理
+
+```js
+// last safety net for asynchronous code
+process.on('unhandledRejection', err => {
+    console.log(err.name, err.message)
+    console.log('UNHANDLED REJECTION 🥵, shutting down...')
+    // 1 stands for uncaught exception 0 stands for success
+    // process.exit()会立即中断所有请求 running or pending
+    server.close(() => {
+        process.exit(1)
+    })
+})
+```
+
