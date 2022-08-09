@@ -1149,3 +1149,25 @@ JSON Web token
 
 user sign up, logging in and access pages or routes
 
+
+
+## 125 密码管理
+
+数据库中进行密码管理，password = confirmPassword
+
+encrypt the password in the database
+
+在模型中直接加密（fat models, thin controllers）
+
+```js
+userSchema.pre('save', async function(next) {
+    // when the password is changed or created
+    if (!this.isModified('password')) return next()
+    // hash the password with cost of 12, hash is a async version
+    this.password = await bcrypt.hash(this.password, 12)
+    // 加密之后删除确认密码字段, passwordConfirm只是一个需要输入的字段，但不需要持久化保存在数据库中
+    this.passwordConfirm = undefined
+    next()
+})
+```
+
