@@ -1171,3 +1171,74 @@ userSchema.pre('save', async function(next) {
 })
 ```
 
+## 126 json web token JWT
+
+Json web token is a stateless solution for authentication.
+
+there is no need to store any session state on the server.
+
+
+
+s1 用户首先发送一个post请求(post /login {email,password})，
+
+s2 Server应用程序检查用户是否存在，以及密码是否正确，创建一个JWT(if user&&password create unique token)，然后存储在server上
+
+s3 server将JWT返回给客户端，
+
+s4 客户端将JWT存储在cookie或本地存储中。 这样用户通过了身份验证，并且没有在服务器上留下任何状态，服务端并不知道哪些用户实际登录了(stateless)，但是用户自己知道。
+
+s5 之后用户想要访问某些路径时（GET /someProtectedRoute），将其jwt连同请求一起发送（类似于出示护照才能进入）
+
+s6 if valid JWT, allow access.
+
+s7 客户端返回相应权限的data
+
+
+
+JWT要配合https使用
+
+
+
+> JWT three parts
+>
+> 1 headers  metadata about the token itself
+>
+> 2 payload the data that we can encode into the token(前两部分只能被编码，但不能被加密，we cant store sensitive data in here)
+>
+> 3 signature (use headers, payloads and secret to create the unique signature),然后headers payload和signature共同构成JWT， 发送给客户端
+
+
+
+服务器在接收到JWT时，要检查JWT有没有被篡改（header payload），检查方法为通过payload和header，secret再生成一个test signature，与JWT自带的signature对比，相同则说明未被篡改
+
+
+
+## 127 signing up users
+
+> jwt.io  可以做jwt debugger
+
+```js
+exports.signup = catchAsync(async (req, res, next) => {
+    // 避免用户的手动注入，所以要吧req.body的对应内容提取出来
+    const newUser = await User.create({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        passwordConfirm: req.body.passwordConfirm
+    })
+    // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN
+    })
+    // 注册时不用验证密码和邮箱
+    res.status(200).json({
+        status: 'success',
+        token,
+        data: {
+            user: newUser
+        }
+    })
+})
+```
+
+## 128 logging in 

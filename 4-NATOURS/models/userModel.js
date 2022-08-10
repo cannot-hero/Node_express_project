@@ -18,7 +18,9 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: [true, 'Please provide a password'],
-        minlength: 8
+        minlength: 8,
+        // 不会自动出现在output中
+        select: false
     },
     passwordConfirm: {
         type: String,
@@ -43,6 +45,11 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
+// instance methods 可以在所有dicument中使用
+userSchema.methods.correctPassword = async function(candidatePwd, userPwd) {
+    // this指向当前document,由于password select为false 所以this无法获取password
+    return await bcrypt.compare(candidatePwd, userPwd)
+}
 const User = mongoose.model('User', userSchema)
 
 module.exports = User
