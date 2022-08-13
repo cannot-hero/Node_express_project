@@ -1358,3 +1358,10 @@ exports.restrictTo = (...roles) => {
 }
 ```
 
+## 132 重置密码
+
+用户发送请求到忘记密码route，会创建一个（随机）reset token，将其发送到email地址
+
+
+
+emial发送该token和新密码 用于更新密码

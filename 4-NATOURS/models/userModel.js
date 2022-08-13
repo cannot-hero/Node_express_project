@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const mongoose = require('mongoose')
 const validator = require('validator')
 const bcrypt = require('bcryptjs')
@@ -39,7 +40,9 @@ const userSchema = new mongoose.Schema({
             message: 'Passwords are not the same!'
         }
     },
-    passwordChangedAt: Date
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date
 })
 userSchema.pre('save', async function(next) {
     // when the password is changed or created
@@ -69,6 +72,20 @@ userSchema.methods.changePasswordAfter = function(JWTTimestamp) {
     }
     // false means not changed, defalut return
     return false
+}
+// 创建用于重置密码的随机token
+userSchema.methods.createPasswordResetToken = function() {
+    // 随机token不用很复杂，所以用node内置的crypto模块   'hex'表示16进制
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    // 不能直接将resetToken放在数据库，敏感数据只存加密形式的，然后将其与加密的版本进行比较
+    this.passwordResetToken = crypto
+        .createHash('sha256')
+        .update(resetToken)
+        .digest('hex')
+    console.log({ resetToken }, this.passwordResetToken)
+    this.passwordResetExpires = Date.now() + 10 * 60 * 1000
+    // 返回重置密码的token
+    return resetToken
 }
 const User = mongoose.model('User', userSchema)
 
