@@ -10,6 +10,7 @@ const {
     getTourStats,
     getMonthlyPlan
 } = require('../controllers/tourController')
+const authController = require('./../controllers/authController')
 
 const router = express.Router()
 // val 是id的值
@@ -21,7 +22,7 @@ const router = express.Router()
 router.route('/top-5-cheap').get(aliasTopTours, getAllTours)
 router
     .route('/')
-    .get(getAllTours)
+    .get(authController.protect, getAllTours)
     .post(createTour)
 
 router.route('/tour-stats').get(getTourStats)

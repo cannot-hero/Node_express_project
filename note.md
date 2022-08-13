@@ -1171,7 +1171,7 @@ userSchema.pre('save', async function(next) {
 })
 ```
 
-## 126 json web token JWT
+## ⭐126 json web token JWT 
 
 Json web token is a stateless solution for authentication.
 
@@ -1242,3 +1242,36 @@ exports.signup = catchAsync(async (req, res, next) => {
 ```
 
 ## 128 logging in 
+
+```js
+exports.login = catchAsync(async (req, res, next) => {
+    const { email, password } = req.body
+    // 1) email and password exist
+    if (!email || !password) {
+        return next(new AppError('Please provide email and password!', 400))
+    }
+    // 2) user exist and the password is correct
+    // password 设置select为false
+    const user = await User.findOne({ email: email }).select('+password')
+    // 如果没有user 则下面这一行没办法跑 因为 null.password
+    // const correct = await user.correctPassword(password,user.password)
+    if (!user || !(await user.correctPassword(password, user.password))) {
+        // 401 未授权
+        return next(new AppError('Incorrect email or password', 401))
+    }
+    // 3) if everything is ok, send token to client
+    const token = signToken(user._id)
+    res.status(200).json({
+        status: 'success',
+        token
+    })
+})
+```
+
+## 129 protecting tour routes
+
+login --> access
+
+使用jwt就是为了让用户访问受保护的路由（路由权限）
+
+getAllTours route只允许用户进行访问，就是在调用该路由前要检查用户是否登录

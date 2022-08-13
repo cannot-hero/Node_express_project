@@ -11,7 +11,7 @@ process.on('uncaughtException', err => {
     process.exit(1)
 })
 
-// process.env.NODE_ENV = 'development'
+process.env.NODE_ENV = 'development'
 // process.env.NODE_ENV = 'production'
 dotenv.config({ path: `./${process.env.NODE_ENV}.env` })
 const app = require('./app')

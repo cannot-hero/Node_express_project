@@ -51,3 +51,31 @@ exports.login = catchAsync(async (req, res, next) => {
         token
     })
 })
+
+// 路由权限
+exports.protect = catchAsync(async (req, res, next) => {
+    // 1 getting token and check of it's there
+    // 一般是把token放在http请求头
+    let token
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        token = req.headers.authorization.split(' ')[1]
+    }
+    console.log(token)
+    if (!token) {
+        return next(
+            new AppError(
+                'You are not logged in! Please log in to get access.',
+                401
+            )
+        )
+    }
+    // 2 verification the token is expire
+
+    // 3 check if user still exist
+
+    // 4 check the user changed password after the jwt issued
+    next()
+})
