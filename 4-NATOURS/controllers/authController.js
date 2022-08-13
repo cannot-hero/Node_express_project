@@ -1,3 +1,4 @@
+const { promisify } = require('util')
 const jwt = require('jsonwebtoken')
 const User = require('../models/userModel')
 const catchAsync = require('./../utils/catchAsync')
@@ -15,7 +16,9 @@ exports.signup = catchAsync(async (req, res, next) => {
         name: req.body.name,
         email: req.body.email,
         password: req.body.password,
-        passwordConfirm: req.body.passwordConfirm
+        passwordConfirm: req.body.passwordConfirm,
+        // 视频里没加这个字段 👇
+        passwordChangedAt: req.body.passwordChangedAt
     })
     // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
     const token = signToken(newUser._id)
@@ -63,7 +66,7 @@ exports.protect = catchAsync(async (req, res, next) => {
     ) {
         token = req.headers.authorization.split(' ')[1]
     }
-    console.log(token)
+    // console.log(token)
     if (!token) {
         return next(
             new AppError(
@@ -73,9 +76,23 @@ exports.protect = catchAsync(async (req, res, next) => {
         )
     }
     // 2 verification the token is expire
-
+    // 因为想在验证完之后执行回调，所以是异步的   解析出token上的payload
+    const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+    // console.log(decode)
     // 3 check if user still exist
-
+    const currentUser = await User.findById(decode.id)
+    if (!currentUser) {
+        return next(
+            new AppError('The user belonging to this token does not exist', 401)
+        )
+    }
     // 4 check the user changed password after the jwt issued
+    if (currentUser.changePasswordAfter(decode.iat)) {
+        return next(
+            new AppError('User password has changed! Please login again!', 401)
+        )
+    }
+    // GRANT ACCESS TO THE PROTECTED ROUTE
+    req.user = currentUser
     next()
 })
