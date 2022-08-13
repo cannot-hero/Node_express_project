@@ -18,7 +18,8 @@ exports.signup = catchAsync(async (req, res, next) => {
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
         // 视频里没加这个字段 👇
-        passwordChangedAt: req.body.passwordChangedAt
+        // passwordChangedAt: req.body.passwordChangedAt
+        role: req.body.role
     })
     // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
     const token = signToken(newUser._id)
@@ -93,6 +94,25 @@ exports.protect = catchAsync(async (req, res, next) => {
         )
     }
     // GRANT ACCESS TO THE PROTECTED ROUTE
+    // 将当前user挂载在req上，供后续中间件处理
     req.user = currentUser
     next()
 })
+
+// 权限和角色管理
+// ...roles 会创建一个数组
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        // roles ['admin','lead-guide']  role = 'user' user不在roles数组中，则无此权限
+        if (!roles.includes(req.user.role)) {
+            // 403 forbidden
+            return next(
+                new AppError(
+                    'You dont have the permission to perform this action!',
+                    403
+                )
+            )
+        }
+        next()
+    }
+}

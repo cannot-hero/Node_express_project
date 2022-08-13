@@ -1275,3 +1275,86 @@ login --> access
 使用jwt就是为了让用户访问受保护的路由（路由权限）
 
 getAllTours route只允许用户进行访问，就是在调用该路由前要检查用户是否登录
+
+
+
+
+
+利用middleware
+
+```js
+// 路由权限
+exports.protect = catchAsync(async (req, res, next) => {
+    // 1 getting token and check of it's there
+    // 一般是把token放在http请求头
+    let token
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        token = req.headers.authorization.split(' ')[1]
+    }
+    // console.log(token)
+    if (!token) {
+        return next(
+            new AppError(
+                'You are not logged in! Please log in to get access.',
+                401
+            )
+        )
+    }
+    // 2 verification the token is expire
+    // 因为想在验证完之后执行回调，所以是异步的   解析出token上的payload
+    const decode = await promisify(jwt.verify)(token, process.env.JWT_SECRET)
+    // console.log(decode)
+    // 3 check if user still exist
+    const currentUser = await User.findById(decode.id)
+    if (!currentUser) {
+        return next(
+            new AppError('The user belonging to this token does not exist', 401)
+        )
+    }
+    // 4 check the user changed password after the jwt issued
+    if (currentUser.changePasswordAfter(decode.iat)) {
+        return next(
+            new AppError('User password has changed! Please login again!', 401)
+        )
+    }
+    // GRANT ACCESS TO THE PROTECTED ROUTE
+    req.user = currentUser
+    next()
+})
+
+```
+
+## 130 postman 高级用法
+
+```js
+// postman test里有参考语句
+pm.environment.set("jwt", pm.response.json().token);
+```
+
+## 131 authorization permission and roles
+
+permission to delete
+
+```js
+// 权限和角色管理
+// ...roles 会创建一个数组
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        // roles ['admin','lead-guide']  role = 'user' user不在roles数组中，则无此权限
+        if (!roles.includes(req.user.role)) {
+            // 403 forbidden
+            return next(
+                new AppError(
+                    'You dont have the permission to perform this action!',
+                    403
+                )
+            )
+        }
+        next()
+    }
+}
+```
+
