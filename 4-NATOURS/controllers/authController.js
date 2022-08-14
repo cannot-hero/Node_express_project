@@ -1,3 +1,4 @@
+const crypto = require('crypto')
 const { promisify } = require('util')
 const jwt = require('jsonwebtoken')
 const User = require('../models/userModel')
@@ -19,7 +20,7 @@ exports.signup = catchAsync(async (req, res, next) => {
         password: req.body.password,
         passwordConfirm: req.body.passwordConfirm,
         // 视频里没加这个字段 👇
-        // passwordChangedAt: req.body.passwordChangedAt
+        // passwordChangedAt: req.body.passwordChangedAt,
         role: req.body.role
     })
     // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
@@ -156,4 +157,33 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
         )
     }
 })
-exports.resetPassword = (req, res, next) => {}
+exports.resetPassword = catchAsync(async (req, res, next) => {
+    // 1 Get user based on token
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(req.params.token)
+        .digest('hex')
+    // 找到user同时检查token是否过期
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() }
+    })
+    // 2 If token is not expired, and there is user, set the new password
+    if (!user) {
+        return next(new AppError('Token is invalid or has expired.', 404))
+    }
+    user.password = req.body.password
+    user.passwordConfirm = req.body.passwordConfirm
+    user.passwordResetExpires = undefined
+    user.passwordResetToken = undefined
+    // 此处不关闭验证， 因为真的想验证
+    await user.save()
+    // 3  update changePasswordAt property for the user
+
+    // 4 Log the user in, send the JWT to client
+    const token = signToken(user._id)
+    res.status(200).json({
+        status: 'success',
+        token
+    })
+})

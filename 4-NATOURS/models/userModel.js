@@ -54,6 +54,14 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
+userSchema.pre('save', function(next) {
+    // 如果没有修改或密码或者是新创建用户
+    if (!this.isModified('password') || this.isNew) return next()
+    // 有时保存到数据库会比发送JWT慢一些，使修改密码的时间戳比JWT创建的时间戳晚
+    // 减一秒确保修改密码的时间戳在发送JWT之前
+    this.passwordChangedAt = Date.now() - 1000
+    next()
+})
 // instance methods 可以在所有dicument中使用
 userSchema.methods.correctPassword = async function(candidatePwd, userPwd) {
     // this指向当前document,由于password select为false 所以this无法获取password

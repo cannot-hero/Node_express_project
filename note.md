@@ -1358,7 +1358,7 @@ exports.restrictTo = (...roles) => {
 }
 ```
 
-## 132 重置密码
+## 132 重置密码 思路
 
 用户发送请求到忘记密码route，会创建一个（随机）reset token，将其发送到email地址
 
@@ -1366,8 +1366,128 @@ exports.restrictTo = (...roles) => {
 
 emial发送该token和新密码 用于更新密码
 
+```js
+// 忘记密码和重置密码
+exports.forgetPassword = catchAsync(async (req, res, next) => {
+    // 1 get user based on posted email
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) {
+        return next(new AppError('This email does not have a user!', 404))
+    }
+    // 2 generate the random reset token
+    const resetToken = user.createPasswordResetToken()
+    await user.save({ validateBeforeSave: false })
+    // 3 send it to user's email
+    // 发送原始的token，而不是加密后的
+    const resetURL = `${req.protocol}://${req.get(
+        'host'
+    )}/api/v1/users/resetPassword/${resetToken}`
+    const message = `Forget your password? Submit a patch request with your new password and passwordconfirm to : ${resetURL} \n if you dont forget your password, please ignore this email`
+    try {
+        await sendEmail({
+            email: req.body.email,
+            subject: 'Your reset token (valid for 10 min)',
+            message
+        })
+        res.status(200).json({
+            status: 'success',
+            message: 'Token send to email!'
+        })
+    } catch (err) {
+        // 如果出错就重置token和expires属性
+        user.passwordResetToken = undefined
+        user.passwordResetExpires = undefined
+        // this only modifies the data, doesnt really save it
+        await user.save({ validateBeforeSave: false })
+        return next(
+            new AppError('There was an error sending email, try it later!'),
+            500
+        )
+    }
+})
+```
+
 
 
 ## 134 发送邮件
 
 nodemailer
+
+```js
+const nodemailer = require('nodemailer')
+
+const sendMail = async options => {
+    // 1 create a transporter
+    const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST,
+        port: process.env.EMAIL_PORT,
+        auth: {
+            user: process.env.EMAIL_USERNAME,
+            pass: process.env.EMAIL_PASSWORD
+        }
+    })
+    // 2 define the email options
+    const mailOptions = {
+        from: 'Ma shu <hello@foxmail.com>',
+        // options.email 说明传入的参数是一个对象
+        to: options.email,
+        subject: options.subject,
+        text: options.message
+        // html:
+    }
+    // 3 actually send the email
+    // 👇 async function
+    await transporter.sendMail(mailOptions)
+}
+
+module.exports = sendMail
+```
+
+## 135 重置密码 函数
+
+```js
+exports.resetPassword = catchAsync(async (req, res, next) => {
+    // 1 Get user based on token
+    const hashedToken = crypto
+        .createHash('sha256')
+        .update(req.params.token)
+        .digest('hex')
+    // 找到user同时检查token是否过期
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() }
+    })
+    // 2 If token is not expired, and there is user, set the new password
+    if (!user) {
+        return next(new AppError('Token is invalid or has expired.', 404))
+    }
+    user.password = req.body.password
+    user.passwordConfirm = req.body.passwordConfirm
+    user.passwordResetExpires = undefined
+    user.passwordResetToken = undefined
+    // 此处不关闭验证， 因为真的想验证
+    await user.save()
+    // 3  update changePasswordAt property for the user
+
+    // 4 Log the user in, send the JWT to client
+    const token = signToken(user._id)
+    res.status(200).json({
+        status: 'success',
+        token
+    })
+})
+```
+
+第三部分在model中完成
+
+```js
+userSchema.pre('save', function(next) {
+    // 如果没有修改或密码或者是新创建用户
+    if (!this.isModified('password') || this.isNew) return next()
+    // 有时保存到数据库会比发送JWT慢一些，使修改密码的时间戳比JWT创建的时间戳晚
+    // 减一秒确保修改密码的时间戳在发送JWT之前
+    this.passwordChangedAt = Date.now() - 1000
+    next()
+})
+```
+
