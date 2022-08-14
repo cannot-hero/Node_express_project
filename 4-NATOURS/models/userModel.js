@@ -42,7 +42,12 @@ const userSchema = new mongoose.Schema({
     },
     passwordChangedAt: Date,
     passwordResetToken: String,
-    passwordResetExpires: Date
+    passwordResetExpires: Date,
+    active: {
+        type: Boolean,
+        default: true,
+        select: false
+    }
 })
 userSchema.pre('save', async function(next) {
     // when the password is changed or created
@@ -60,6 +65,12 @@ userSchema.pre('save', function(next) {
     // 有时保存到数据库会比发送JWT慢一些，使修改密码的时间戳比JWT创建的时间戳晚
     // 减一秒确保修改密码的时间戳在发送JWT之前
     this.passwordChangedAt = Date.now() - 1000
+    next()
+})
+// query middleware 只查找活跃用户  以find开头的
+userSchema.pre(/^find/, function(next) {
+    // this point to current query
+    this.find({ active: { $ne: false } })
     next()
 })
 // instance methods 可以在所有dicument中使用

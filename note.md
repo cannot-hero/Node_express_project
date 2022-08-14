@@ -1573,3 +1573,31 @@ const filterObj = (obj, ...allowedFields) => {
 router.patch('/updateMe', authController.protect, userController.updateMe)
 ```
 
+## 138 用户注销
+
+实际没有从数据库中删除该用户，而是将账号设置为非活动状态
+
+```js
+// query middleware 只查找活跃用户  以find开头的
+userSchema.pre(/^find/, function(next) {
+    // this point to current query
+    this.find({ active: { $ne: false } })
+    next()
+})
+```
+
+```js
+exports.deleteMe = catchAsync(async (req, res, next) => {
+    await User.findByIdAndUpdate(req.user.id, { active: false })
+
+    res.status(204).json({
+        status: 'success',
+        data: null
+    })
+})
+```
+
+```js
+router.delete('/deleteMe', authController.protect, userController.deleteMe)
+```
+
