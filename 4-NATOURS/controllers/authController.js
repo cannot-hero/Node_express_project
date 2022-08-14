@@ -12,6 +12,17 @@ const signToken = id => {
     })
 }
 
+const createSendToken = (user, statusCode, res) => {
+    const token = signToken(user._id)
+    // 注册时不用验证密码和邮箱
+    res.status(statusCode).json({
+        status: 'success',
+        token,
+        data: {
+            user
+        }
+    })
+}
 exports.signup = catchAsync(async (req, res, next) => {
     // 避免用户的手动注入，所以要吧req.body的对应内容提取出来
     const newUser = await User.create({
@@ -24,15 +35,16 @@ exports.signup = catchAsync(async (req, res, next) => {
         role: req.body.role
     })
     // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
+    createSendToken(newUser, 201, res)
     const token = signToken(newUser._id)
     // 注册时不用验证密码和邮箱
-    res.status(200).json({
-        status: 'success',
-        token,
-        data: {
-            user: newUser
-        }
-    })
+    // res.status(200).json({
+    //     status: 'success',
+    //     token,
+    //     data: {
+    //         user: newUser
+    //     }
+    // })
 })
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -51,11 +63,7 @@ exports.login = catchAsync(async (req, res, next) => {
         return next(new AppError('Incorrect email or password', 401))
     }
     // 3) if everything is ok, send token to client
-    const token = signToken(user._id)
-    res.status(200).json({
-        status: 'success',
-        token
-    })
+    createSendToken(user, 200, res)
 })
 
 // 路由权限
@@ -181,9 +189,25 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     // 3  update changePasswordAt property for the user
 
     // 4 Log the user in, send the JWT to client
-    const token = signToken(user._id)
-    res.status(200).json({
-        status: 'success',
-        token
-    })
+    createSendToken(user, 200, res)
+})
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+    // only for logged users
+    // 1 Get user from collection
+    // 因为是登录的情况下才能修改密码。所以是有经过protect中间件的
+    const user = await User.findById(req.user.id).select('+password')
+    // 2 Check if POSTed current password is correct
+    if (
+        !(await user.correctPassword(req.body.passwordCurrent, user.password))
+    ) {
+        return next(new AppError('Your current password is wrong!', 401))
+    }
+    // 3 If so, update the password
+    user.password = req.body.password
+    user.passwordConfirm = req.body.passwordConfirm
+    await user.save()
+    // 不使用findByIdAndUpdate() 关于密码不要使用有关update的api
+    // 4 Log user in, send JWT
+    createSendToken(user, 200, res)
 })

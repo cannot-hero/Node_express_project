@@ -1358,7 +1358,7 @@ exports.restrictTo = (...roles) => {
 }
 ```
 
-## 132 重置密码 思路
+## 132 忘记密码 重置密码 思路
 
 用户发送请求到忘记密码route，会创建一个（随机）reset token，将其发送到email地址
 
@@ -1443,7 +1443,7 @@ const sendMail = async options => {
 module.exports = sendMail
 ```
 
-## 135 重置密码 函数
+## 135 忘记密码 重置密码 函数
 
 ```js
 exports.resetPassword = catchAsync(async (req, res, next) => {
@@ -1489,5 +1489,87 @@ userSchema.pre('save', function(next) {
     this.passwordChangedAt = Date.now() - 1000
     next()
 })
+```
+
+## 136 修改密码
+
+```js
+exports.updatePassword = catchAsync(async (req, res, next) => {
+    // only for logged users
+    // 1 Get user from collection
+    // 因为是登录的情况下才能修改密码。所以是有经过protect中间件的
+    const user = await User.findById(req.user.id).select('+password')
+    // 2 Check if POSTed current password is correct
+    if (
+        !(await user.correctPassword(req.body.passwordCurrent, user.password))
+    ) {
+        return next(new AppError('Your current password is wrong!', 401))
+    }
+    // 3 If so, update the password
+    user.password = req.body.password
+    user.passwordConfirm = req.body.passwordConfirm
+    await user.save()
+    // 不使用findByIdAndUpdate() 关于密码不要使用有关update的api
+    // 4 Log user in, send JWT
+    createSendToken(user, 200, res)
+})
+```
+
+```js
+// 只有登录后才能修改密码
+router.patch(
+    '/updateMyPassword',
+    authController.protect,
+    authController.updatePassword
+)
+```
+
+## 137 修改个人信息
+
+```js
+// 更新用户个人信息
+exports.updateMe = catchAsync(async (req, res, next) => {
+    // 1 throw an error if user POSTs password
+    if (req.body.password || req.body.passwordConfirm) {
+        return next(
+            new AppError(
+                'This route is not for password update. Please use updateMyPassword.',
+                400 // bad request
+            )
+        )
+    }
+    // 2 Filter the unwanted flieds in req.body
+    const filterBody = filterObj(req.body, 'name', 'email')
+    // 3 Update user document
+    // 因为是和密码无关的，所以可以用 findByIdAndUpdate {new:true}表示返回更新后的对象
+    // x 是将req.body中属性做了filter之后的
+    const updateUser = await User.findByIdAndUpdate(req.user.id, filterBody, {
+        new: true,
+        runValidators: true
+    })
+
+    res.status(200).json({
+        status: 'success',
+        user: updateUser
+    })
+})
+```
+
+```js
+// 剩余字段会成一个数组
+const filterObj = (obj, ...allowedFields) => {
+    const newObj = {}
+    // 遍历对象
+    Object.keys(obj).forEach(el => {
+        if (allowedFields.includes(el)) {
+            newObj[el] = obj[el]
+        }
+    })
+    return newObj
+}
+```
+
+```js
+router.patch('/updateMe', authController.protect, userController.updateMe)
 ```
 
