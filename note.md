@@ -1365,3 +1365,9 @@ exports.restrictTo = (...roles) => {
 
 
 emial发送该token和新密码 用于更新密码
+
+
+
+## 134 发送邮件
+
+nodemailer
