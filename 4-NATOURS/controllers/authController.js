@@ -14,7 +14,23 @@ const signToken = id => {
 
 const createSendToken = (user, statusCode, res) => {
     const token = signToken(user._id)
-    // 注册时不用验证密码和邮箱
+    // 配置cookie
+    const cookieOptions = {
+        // js中指定日期时，要用new Date()
+        expires: new Date(
+            Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+        ),
+        // cookie只会被发送在加密连接上
+        // secure:true,
+        // 浏览器不能以任何方式访问和修改，防止跨站脚本攻击
+        httpOnly: true
+    }
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true
+    res.cookie('jwt', token, cookieOptions)
+
+    // remove password from output
+    user.password = undefined
+
     res.status(statusCode).json({
         status: 'success',
         token,
@@ -36,7 +52,6 @@ exports.signup = catchAsync(async (req, res, next) => {
     })
     // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
     createSendToken(newUser, 201, res)
-    const token = signToken(newUser._id)
     // 注册时不用验证密码和邮箱
     // res.status(200).json({
     //     status: 'success',

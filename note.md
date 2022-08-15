@@ -1601,3 +1601,90 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 router.delete('/deleteMe', authController.protect, userController.deleteMe)
 ```
 
+## 139 ⭐security
+
+> 1 数据库受损：他人获得数据库权限
+
+必须始终加密密码和重置token
+
+> 2 蛮力攻击：尝试猜密码
+
+让登录请求变慢  bcrypt包就是这样做的
+
+实施速率限制，限制来自一个ip的请求数量
+
+限制每个用户尝试登录的次数
+
+> 3 跨站脚本攻击 XSS cross-site scripting attack
+
+注入恶意代码， 它允许攻击者读取本地存储，所以不要吧JWT放在local storage，应该放在cookie中
+
+这使得浏览器可以只接收和发送cookie，不能以任何方式访问和修改它
+
+方法：对用户的输入做处理并设置一些特殊的HTTP请求头
+
+> 4 拒绝服务攻击 denial-of-service DOS attack
+
+对用户的输入做处理
+
+> 其他建议
+
+1 使用https发请求
+
+2 始终创建随机token，而不是根据日期什么的来生成
+
+3 修改密码后 token不在有效
+
+4 env文件不要用git托管
+
+5 不要把整个错误发送客户端
+
+6 csurf包 应对跨站点请求伪造 cross-site request forgery
+
+7 在执行高价值操作之前进行身份验证
+
+8 token 黑名单
+
+9 refresh token
+
+10 two factor authentication 两因素身份验证 （验证码，或手机短信）
+
+防止参数污染
+
+## 140 sending token via cookie
+
+浏览器会自动存储其接收到的cookie 并且在将来对服务器的请求中发送该cookie
+
+js中指定日期时，要用new Date()
+
+在最终发响应的时候加
+
+```js
+const createSendToken = (user, statusCode, res) => {
+    const token = signToken(user._id)
+    // 配置cookie
+    const cookieOptions = {
+        expires: new Date(
+            Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
+        ),
+        // cookie只会被发送在加密连接上
+        // secure:true,
+        // 浏览器不能以任何方式访问和修改，防止跨站脚本攻击
+        httpOnly: true
+    }
+    if (process.env.NODE_ENV === 'production') cookieOptions.secure = true
+    res.cookie('jwt', token, cookieOptions)
+
+    // remove password from output
+    user.password = undefined
+
+    res.status(statusCode).json({
+        status: 'success',
+        token,
+        data: {
+            user
+        }
+    })
+}
+```
+
