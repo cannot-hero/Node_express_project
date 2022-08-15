@@ -1,19 +1,30 @@
-/* eslint-disable no-console */
-/* eslint-disable import/newline-after-import */
 const express = require('express')
 const morgan = require('morgan')
+const rateLimit = require('express-rate-limit')
+
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
+
 const app = express()
 // console.log(process.env.NODE_ENV)
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
-// 1. MIDDLEWARE
+// 1. Global MIDDLEWARE
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
 }
+
+const limiter = rateLimit({
+    // 一小时内只能访问100次
+    max: 100,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many requests in this IP, please try in an hour!'
+})
+// 全局限制
+app.use('/api', limiter)
+
 app.use(express.json()) // 可以获取请求体
 // 静态文件托管  托管public下的文件
 app.use(express.static(`${__dirname}/public`))

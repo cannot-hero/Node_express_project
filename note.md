@@ -1688,3 +1688,34 @@ const createSendToken = (user, statusCode, res) => {
 }
 ```
 
+## 141 rating limit （rate limiter） 
+
+防止同一个ip向api发送太多请求
+
+防止brute attack
+
+rate limiter ----count the request number of the requests coming from one IP
+
+借助express-rate-limit
+
+
+
+```js
+const limiter = rateLimit({
+    // 一小时内只能访问100次
+    max: 100,
+    windowMs: 60 * 60 * 1000,
+    message: 'Too many requests in this IP, please try in an hour!'
+})
+// 全局限制
+app.use('/api', limiter)
+```
+
+响应头会多出两个属性，程序重新运行后这些都会再次刷新
+
+```
+X-RateLimit-Limit
+X-RateLimit-Remaining
+```
+
+报错时 429  Too many request
