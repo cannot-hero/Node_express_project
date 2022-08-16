@@ -1780,3 +1780,78 @@ app.use(
 )
 ```
 
+## 146  ⭐ DATA MODELING
+
+将非结构化数据转化为的结构化数据的过程
+
+Our goal with data modeling is to structure the unstruct data into a logical way. To reflecting the real-world relationships that exists between some data sets
+
+> STEP
+>
+> STEP1  Different types of relationships between data
+>
+> STEP2 引用/规范化(referencing or normalization) vs 嵌入或非规范化(embedding or denormalization)
+>
+> STEP3 Embedding or reference to other documents based on a coupled of different factors
+>
+> STEP4 type of referencing
+
+
+
+> different types of relationships
+>
+> 一对一 ：一个字段只有一个值  电影只有一个电影名
+>
+> 一对多 ： ont to few, one to many, one to a ton or to a million（关系型数据库不会做这些区分）
+>
+> ​				一个电影只能拿数个奖项（one document relates to many other documents）
+>
+> ​				一个电影可能有数千个评论和打分
+>
+> ​				日志功能
+>
+> 多对多   一个电影有多个演员，每个演员又出演多个电影（two directions）
+
+在引用形式中，会有其他相关数据集和document分开，数据被很好的分离，这就是归一化的意思
+
+> 电影app  一个movie document 一个actor document  使用演员ID创建引用，将电影和演员联系起来
+
+![image-20220816205923937](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220816205923937.png)
+
+![image-20220816210017491](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220816210017491.png)
+
+embedding可以提高performance，因为query更少，一次性获得的数据更多
+
+但是不能单独查嵌入的数据
+
+
+
+### 判断要做嵌入式还是引用式
+
+1 关系类型（两个数据是如何关联起来的）  一对一用嵌入式  多对多用引用 一对大量也用引用  一对多要取舍
+
+2 数据获取模式（数据读写频率如何，主要是读还是写）  读取很多建议嵌入式（这样每次只用访问一个数据库），电影截图适合嵌入式（因为读取更多），电影评论适合引用式，因为电影评论写入更多	 
+
+3 data closeness （两个数据的相关性如何，想怎么查找数据）  相互隶属（user email）嵌入式，如果经常单独查找，用引用式 
+
+### 引用类型
+
+> 永远不应允许数组无限增长
+
+child referncing   在父文档中保留refernce，通常为数组  （one to few,子文档不会增长很多）
+
+parent referencing  （one to many and one to ton）child knows its parents, parents know nothing about the children, 不知道是谁，也不知道有多少
+
+two-way referencing
+
+
+
+
+
+一般都倾向于嵌入，除非有很好的不嵌入的理由（one to ton, many to many用引用）
+
+经常要单独访问的，用referncing
+
+读取很多，写入很少，用嵌入
+
+![image-20220816224158242](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220816224158242.png)

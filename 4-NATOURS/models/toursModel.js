@@ -87,7 +87,33 @@ const tourSchema = new mongoose.Schema(
         secretTour: {
             type: Boolean,
             default: false
-        }
+        },
+        // 描述启程的点
+        startLocation: {
+            //GeoJSON
+            type: {
+                type: String,
+                default: 'Point',
+                enum: ['Point']
+            },
+            coordinates: [Number],
+            address: String,
+            description: String
+        },
+        // 通过对象数组，会创建全新的documents inside the parent document
+        locations: [
+            {
+                type: {
+                    type: String,
+                    default: 'Point',
+                    enum: ['Point']
+                },
+                coordinate: [Number],
+                address: String,
+                description: String,
+                day: Number
+            }
+        ]
     },
     {
         // schema的配置对象 toJSON是指数据以JSON传出时 使用virtuals
