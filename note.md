@@ -1719,3 +1719,23 @@ X-RateLimit-Remaining
 ```
 
 报错时 429  Too many request
+
+## 142 setting security http headers
+
+helmet
+
+```js
+// 1. Global MIDDLEWARE
+// Set security HTTP headers helmet会直接返回一个函数
+app.use(helmet())
+```
+
+res.body  新增
+
+X-DNS-Prefetch-Control
+
+Strict-Transport-Security
+
+X-Download-Options
+
+X-XSS-Protection

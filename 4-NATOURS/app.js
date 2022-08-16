@@ -1,6 +1,9 @@
 const express = require('express')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
+const helmet = require('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const xss = require('xss-clean')
 
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
@@ -12,10 +15,13 @@ const app = express()
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
 // 1. Global MIDDLEWARE
+// Set security HTTP headers helmet会直接返回一个函数
+app.use(helmet())
+
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'))
 }
-
+// limit requests from same IP
 const limiter = rateLimit({
     // 一小时内只能访问100次
     max: 100,
@@ -24,11 +30,18 @@ const limiter = rateLimit({
 })
 // 全局限制
 app.use('/api', limiter)
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' })) // 可以获取请求体
 
-app.use(express.json()) // 可以获取请求体
+// data sanitization against NoSQL query injection
+// 查看req.body, req.query,req.params 过滤掉所有$和.
+app.use(mongoSanitize())
+// data sanitization against XSS
+// 将html脚本转换
+app.use(xss())
 // 静态文件托管  托管public下的文件
 app.use(express.static(`${__dirname}/public`))
-
+// test middleware
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString()
     // console.log(req.headers)
