@@ -1739,3 +1739,44 @@ Strict-Transport-Security
 X-Download-Options
 
 X-XSS-Protection
+
+
+
+## 143 用户输入处理
+
+nosql injection
+
+```sql
+{"$gt":""}
+可以让只知道密码也可以登录
+```
+
+```
+express-mongo-sanitize
+xss
+```
+
+
+
+## 144 http parameter pollution
+
+hpp package
+
+白名单
+
+```js
+//prevent parameter pollution
+app.use(
+    hpp({
+        whitelist: [
+            'duration',
+            'ratingsQuantity',
+            'ratingsAverage',
+            'maxGroupSize',
+            'difficulty',
+            'price'
+        ]
+    })
+)
+```
+
