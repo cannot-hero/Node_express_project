@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const slugify = require('slugify')
 const validator = require('validator')
+const User = require('./userModel')
 
 // Schema 不仅可以传入相关定义， 也可以传schema的配置对象
 const tourSchema = new mongoose.Schema(
@@ -113,7 +114,8 @@ const tourSchema = new mongoose.Schema(
                 description: String,
                 day: Number
             }
-        ]
+        ],
+        guides: Array
     },
     {
         // schema的配置对象 toJSON是指数据以JSON传出时 使用virtuals
@@ -133,6 +135,13 @@ tourSchema.pre('save', function(next) {
     next()
 })
 
+// 创建带guides的tours,只适用于创建
+tourSchema.pre('save', async function(next) {
+    // async函数返回一个promise，所以guidesPromise是一个Promise数组
+    const guidesPromises = this.guides.map(async id => await User.findById(id))
+    this.guides = await Promise.all(guidesPromises)
+    next()
+})
 // tourSchema.pre('save', function(next) {
 //     console.log('Will save documents ...')
 //     next()

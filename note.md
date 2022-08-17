@@ -1855,3 +1855,18 @@ two-way referencing
 读取很多，写入很少，用嵌入
 
 ![image-20220816224158242](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220816224158242.png)
+
+## 149 embed user document to tour document
+
+创建新tour时，只用添加一组guides id，然后就可以获取对应的guides用户document
+
+```js
+// 创建带guides的tours,只适用于创建
+tourSchema.pre('save', async function(next) {
+    // async函数返回一个promise，所以guidesPromise是一个Promise数组
+    const guidesPromises = this.guides.map(async id => await User.findById(id))
+    this.guides = await Promise.all(guidesPromises)
+    next()
+})
+```
+
