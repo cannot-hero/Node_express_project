@@ -1870,3 +1870,73 @@ tourSchema.pre('save', async function(next) {
 })
 ```
 
+这种嵌入式会导致将来修改角色信息时要对每一个tour做检查，牵一发而动全身
+
+## 150 model tour guides (child ref)
+
+```js
+const Tour = mongoose.Schema{
+    guides: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'User'
+        }
+    ]
+}        
+
+```
+
+## 151 populating tour guides
+
+> 1 先创建引用
+>
+> 2 populate the fields
+
+用populate来替换引用字段，使请求到的字段像是embed的
+
+populate happen in query
+
+Only in query, not in database
+
+
+
+populate 是用于mongoose数据处理的最基础的tool，populate会在后台创建一个query，所以会影响性能
+
+```js
+exports.getTour = catchAsync(async (req, res, next) => {
+    // const tour = await Tour.findById(req.params.id).populate('guides')
+    const tour = await Tour.findById(req.params.id).populate({
+        path: 'guides',
+        // 只输出感兴趣的内容
+        select: '-__v -passwordChangedAt'
+    })
+    // 通过发了一个假id 发现await 返回值为null
+    if (!tour) {
+        return next(new AppError('No tour could find with this ID', 404))
+    }
+    // Tour.findOne({_id:req.params.id})
+    res.status(200).json({
+        status: 'success',
+        // results: tours.length,
+        data: {
+            tour
+        }
+    })
+})
+```
+
+使用query middleware来避免重复
+
+```js
+// QUERY MIDDLEWARE
+tourSchema.pre(/^find/, function(next) {
+    // this points to current query
+    this.populate({
+        path: 'guides',
+        // 只输出感兴趣的内容
+        select: '-__v -passwordChangedAt'
+    })
+    next()
+})
+```
+

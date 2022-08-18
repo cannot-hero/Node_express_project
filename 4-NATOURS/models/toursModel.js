@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const slugify = require('slugify')
 const validator = require('validator')
-const User = require('./userModel')
+// const User = require('./userModel')
 
 // Schema 不仅可以传入相关定义， 也可以传schema的配置对象
 const tourSchema = new mongoose.Schema(
@@ -115,7 +115,15 @@ const tourSchema = new mongoose.Schema(
                 day: Number
             }
         ],
-        guides: Array
+        // embed 直接将guides存在一个数组中
+        // guides: Array
+        // 这里只存guides的id，当访问tour时，自动去访问guide (ref) child ref
+        guides: [
+            {
+                type: mongoose.Schema.ObjectId,
+                ref: 'User'
+            }
+        ]
     },
     {
         // schema的配置对象 toJSON是指数据以JSON传出时 使用virtuals
@@ -135,13 +143,13 @@ tourSchema.pre('save', function(next) {
     next()
 })
 
-// 创建带guides的tours,只适用于创建
-tourSchema.pre('save', async function(next) {
-    // async函数返回一个promise，所以guidesPromise是一个Promise数组
-    const guidesPromises = this.guides.map(async id => await User.findById(id))
-    this.guides = await Promise.all(guidesPromises)
-    next()
-})
+// 创建带guides的tours,只适用于创建  embed
+// tourSchema.pre('save', async function(next) {
+//     // async函数返回一个promise，所以guidesPromise是一个Promise数组
+//     const guidesPromises = this.guides.map(async id => await User.findById(id))
+//     this.guides = await Promise.all(guidesPromises)
+//     next()
+// })
 // tourSchema.pre('save', function(next) {
 //     console.log('Will save documents ...')
 //     next()
@@ -154,6 +162,15 @@ tourSchema.pre('save', async function(next) {
 // })
 
 // QUERY MIDDLEWARE
+tourSchema.pre(/^find/, function(next) {
+    // this points to current query
+    this.populate({
+        path: 'guides',
+        // 只输出感兴趣的内容
+        select: '-__v -passwordChangedAt'
+    })
+    next()
+})
 // this middleware 适用于find 不适用于findOne
 // tourSchema.pre('find', function(next) {
 // 用正则表达式来匹配find开头的
