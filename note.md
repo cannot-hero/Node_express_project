@@ -1940,3 +1940,12 @@ tourSchema.pre(/^find/, function(next) {
 })
 ```
 
+## 153 create and get reviews
+
+> 1 make a model to create a new documents
+>
+> 2 define controller functions to get and create reviews
+>
+> 3 use controller function to create some routes
+>
+> 4 给app配置路由器
