@@ -2002,3 +2002,32 @@ exports.getTour = catchAsync(async (req, res, next) => {
 }
 ```
 
+## 156 嵌套路由
+
+当资源有父子关系时需要使用嵌套路由
+
+nested routes
+
+发表评论
+
+> *//* POST /tour/:tourid/reviews
+>
+> *//* GET  /tour/:tourid/reviews  获得该tour下的评论
+>
+> *//* GET  /tour/:tourid/reviews/:reviewsId  获得该tour下的特定评论
+
+首先需要重新定位到tour路由中
+
+```js
+// POST /tour/:tourid/reviews
+// GET  /tour/:tourid/reviews   获得该tour下的评论
+// GET  /tour/:tourid/reviews/:reviewsId   获得该tour下的特定评论
+router
+    .route('/:tourId/reviews')
+    .post(
+        authController.protect,
+        authController.restrictTo('user'),
+        reviewController.createReview
+    )
+```
+

@@ -11,8 +11,21 @@ const {
     getMonthlyPlan
 } = require('../controllers/tourController')
 const authController = require('./../controllers/authController')
+const reviewRouter = require('./reviewRoutes')
 
+// POST /tour/:tourid/reviews
+// GET  /tour/:tourid/reviews   获得该tour下的评论
+// GET  /tour/:tourid/reviews/:reviewsId   获得该tour下的特定评论
+// router
+//     .route('/:tourId/reviews')
+//     .post(
+//         authController.protect,
+//         authController.restrictTo('user'),
+//         reviewController.createReview
+//     )
 const router = express.Router()
+// mounting a router 使得tour router 和 review router 很好的分开
+router.use('/:tourId/reviews', reviewRouter) //router 本身是一个中间件，声明在某一路径上使用哪个router
 // val 是id的值
 // router.param('id', checkID)
 // create a new middleware
