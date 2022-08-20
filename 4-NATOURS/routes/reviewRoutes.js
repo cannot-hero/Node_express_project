@@ -6,6 +6,7 @@ const authController = require('../controllers/authController')
 // {mergeParams:true} 可以访问从其他路由器上传来的params
 const router = express.Router({ mergeParams: true })
 // POST /tour/:tourid/reviews
+// GET /tour/:tourid/reviews
 router
     .route('/')
     .get(reviewController.getAllReviews)

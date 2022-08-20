@@ -2031,3 +2031,15 @@ router
     )
 ```
 
+## 157 nested toures with express
+
+上一个路由放在了tourroutes中，但是实现的是添加评论
+
+```js
+exports.getAllReviews = catchAsync(async (req, res, next) => {
+    let filter = {}
+    if (req.params.tourId) filter = { tour: req.params.tourId }
+    const reviews = await Review.find(filter)
+}
+```
+
