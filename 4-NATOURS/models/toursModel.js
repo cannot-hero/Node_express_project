@@ -124,6 +124,13 @@ const tourSchema = new mongoose.Schema(
                 ref: 'User'
             }
         ]
+        // child ref 让tour获得评论
+        // reviews:[
+        //     {
+        //         type:mongoose.Schema.ObjectId,
+        //         ref:'Review'
+        //     }
+        // ]
     },
     {
         // schema的配置对象 toJSON是指数据以JSON传出时 使用virtuals
@@ -135,6 +142,16 @@ const tourSchema = new mongoose.Schema(
 // get 相当于定义了一个getter  getter不能用箭头函数(arrow function)，因为要用到this regular function
 tourSchema.virtual('durationWeeks').get(function() {
     return this.duration / 7
+})
+
+// 虚拟填充  .virtual('filed name')  这样可以保留对子文档的引用，但是没有持久化在数据库中
+tourSchema.virtual('reviews', {
+    // model want to refernce
+    ref: 'Review',
+    // 指定要连接的两个数据库的字段 Reivew 下的tour字段
+    foreignField: 'tour',
+    // 指定当前 id的存储位置
+    localField: '_id'
 })
 // document middleware: runs before .save() and .create
 tourSchema.pre('save', function(next) {

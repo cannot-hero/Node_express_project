@@ -1949,3 +1949,56 @@ tourSchema.pre(/^find/, function(next) {
 > 3 use controller function to create some routes
 >
 > 4 给app配置路由器
+
+## 154 populating reviews
+
+要填充两个字段时，需要调用两次populate
+
+```js
+// populate reviews 填充两个字段，需要调用两次populate
+reviewSchema.pre(/^find/, function(next) {
+    // this points to current query
+    this.populate({
+        // path是指Schema中会被填充的字段
+        path: 'tour',
+        select: 'name'
+    }).populate({
+        path: 'user',
+        select: 'name photo'
+    })
+    next()
+})
+```
+
+## 155 virtual populate
+
+how to access the reviews on the tours?
+
+目前是父引用，所以是有评论指向tours，而不是tours指向评论
+
+vittual populate来填充reviews
+
+在tour中保留评论id的数组，但是没有持久化在数据库中，解决child引用的问题(会随着评论增加而使得父数据库量也增加，让数组无线增长)，类似于虚拟字段，但是有populate
+
+```js
+// 虚拟填充  .virtual('filed name')  这样可以保留对子文档的引用，但是没有持久化在数据库中
+tourSchema.virtual('reviews', {
+    // model want to refernce
+    ref: 'Review',
+    // 指定要连接的两个数据库的字段 Reivew 下的tour字段
+    foreignField: 'tour',
+    // 指定当前 id的存储位置
+    localField: '_id'
+})
+```
+
+使用时与populate一致
+
+```js
+exports.getTour = catchAsync(async (req, res, next) => {
+    // const tour = await Tour.findById(req.params.id).populate('guides')
+    const tour = await Tour.findById(req.params.id).populate('reviews')
+    // 通过发了一个假id 发现await 返回值为null
+}
+```
+

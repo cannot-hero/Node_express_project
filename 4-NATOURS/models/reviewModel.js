@@ -36,6 +36,24 @@ const reviewSchema = new mongoose.Schema(
     }
 )
 
+// populate reviews 填充两个字段，需要调用两次populate
+reviewSchema.pre(/^find/, function(next) {
+    // this points to current query
+    // this.populate({
+    //     // path是指Schema中会被填充的字段
+    //     path: 'tour',
+    //     select: 'name'
+    // }).populate({
+    //     path: 'user',
+    //     select: 'name photo'
+    // })
+    this.populate({
+        path: 'user',
+        select: 'name photo'
+    })
+    next()
+})
+
 const Review = mongoose.model('Review', reviewSchema)
 
 module.exports = Review

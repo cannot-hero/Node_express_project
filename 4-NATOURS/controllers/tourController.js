@@ -37,7 +37,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 
 exports.getTour = catchAsync(async (req, res, next) => {
     // const tour = await Tour.findById(req.params.id).populate('guides')
-    const tour = await Tour.findById(req.params.id)
+    const tour = await Tour.findById(req.params.id).populate('reviews')
     // 通过发了一个假id 发现await 返回值为null
     if (!tour) {
         return next(new AppError('No tour could find with this ID', 404))
