@@ -2043,3 +2043,6 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
 }
 ```
 
+## 159 building handler factory function
+
+工厂函数，返回一个函数的函数

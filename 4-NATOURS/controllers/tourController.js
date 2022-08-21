@@ -2,6 +2,7 @@ const AppError = require('../utils/appError')
 const Tour = require('./../models/toursModel')
 const APIFeatures = require('./../utils/apiFeatures')
 const catchAsync = require('./../utils/catchAsync')
+const factory = require('./handlerFactory')
 // const tours = JSON.parse(
 //     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // )
@@ -78,16 +79,17 @@ exports.updateTour = catchAsync(async (req, res, next) => {
         }
     })
 })
-exports.deleteTour = catchAsync(async (req, res, next) => {
-    const tour = await Tour.findByIdAndDelete(req.params.id)
-    if (!tour) {
-        return next(new AppError('No tour could find with this ID', 404))
-    }
-    res.status(204).json({
-        status: 'success',
-        data: null
-    })
-})
+exports.deleteTour = factory.deleteOne(Tour)
+// exports.deleteTour = catchAsync(async (req, res, next) => {
+//     const tour = await Tour.findByIdAndDelete(req.params.id)
+//     if (!tour) {
+//         return next(new AppError('No tour could find with this ID', 404))
+//     }
+//     res.status(204).json({
+//         status: 'success',
+//         data: null
+//     })
+// })
 
 exports.getTourStats = catchAsync(async (req, res, next) => {
     // aggregate输入一个pipeline的[]
