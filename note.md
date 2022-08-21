@@ -2046,3 +2046,33 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
 ## 159 building handler factory function
 
 工厂函数，返回一个函数的函数
+
+## 163 add a _me endpoint
+
+controller
+
+```js
+// 获取个人信息
+exports.getMe = (req, res, next) => {
+    // 因为想用factory function，所以把相应的变量替换掉
+    req.params.id = req.user.id
+    next()
+}
+```
+
+route
+
+```js
+router.get(
+    '/me',
+    authController.protect,
+    userController.getMe,
+    userController.getUser
+)
+```
+
+## 164 miss authentication and authorization in resourece
+
+authentication 證明鑒定
+
+authorization 授權

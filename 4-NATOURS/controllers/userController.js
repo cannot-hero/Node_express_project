@@ -50,7 +50,12 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
         data: null
     })
 })
-
+// 获取个人信息
+exports.getMe = (req, res, next) => {
+    // 因为想用factory function，所以把相应的变量替换掉
+    req.params.id = req.user.id
+    next()
+}
 exports.createUser = (req, res) => {
     res.status(500).json({
         status: 'error',
