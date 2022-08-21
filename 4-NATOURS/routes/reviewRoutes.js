@@ -5,13 +5,16 @@ const authController = require('../controllers/authController')
 
 // {mergeParams:true} 可以访问从其他路由器上传来的params
 const router = express.Router({ mergeParams: true })
+
+// 只有登录了才能发表评论
+router.use(authController.protect)
+
 // POST /tour/:tourid/reviews
 // GET /tour/:tourid/reviews
 router
     .route('/')
     .get(reviewController.getAllReviews)
     .post(
-        authController.protect,
         authController.restrictTo('user'),
         reviewController.setTourUserIds,
         reviewController.createReview
@@ -20,6 +23,12 @@ router
 router
     .route('/:id')
     .get(reviewController.getReview)
-    .patch(reviewController.updateReview)
-    .delete(reviewController.deleteReview)
+    .patch(
+        authController.restrictTo('user', 'admin'),
+        reviewController.updateReview
+    )
+    .delete(
+        authController.restrictTo('user', 'admin'),
+        reviewController.deleteReview
+    )
 module.exports = router

@@ -2076,3 +2076,5 @@ router.get(
 authentication 證明鑒定
 
 authorization 授權
+
+要捋清楚哪些身份的人可以访问哪些api
