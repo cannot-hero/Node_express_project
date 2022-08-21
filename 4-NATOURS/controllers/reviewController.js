@@ -16,19 +16,13 @@ exports.getAllReviews = catchAsync(async (req, res, next) => {
     })
 })
 
-exports.createReview = catchAsync(async (req, res, next) => {
+exports.setTourUserIds = (req, res, next) => {
     // 需要知道哪个用户给哪个tour添加了评论, allow nested routes
     if (!req.body.tour) req.body.tour = req.params.tourId
     // protect middleware 会记录req.user
     if (!req.body.user) req.body.user = req.user.id
-    const newReview = await Review.create(req.body)
-
-    res.status(201).json({
-        status: 'success',
-        data: {
-            review: newReview
-        }
-    })
-})
-
+    next()
+}
+exports.createReview = factory.createOne(Review)
+exports.updateReview = factory.updateOne(Review)
 exports.deleteReview = factory.deleteOne(Review)
