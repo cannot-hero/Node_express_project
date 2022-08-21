@@ -13,45 +13,47 @@ exports.aliasTopTours = (req, res, next) => {
     next()
 }
 
-exports.getAllTours = catchAsync(async (req, res, next) => {
-    // EXCUTE QUERY
-    const features = new APIFeatures(Tour.find(), req.query)
-        .filter()
-        .sort()
-        .limitFields()
-        .paginate()
-    const tours = await features.query
-    // const query = Tour.find()
-    //     .where('duration')
-    //     .equals(5)
-    //     .where('difficulty')
-    //     .equals('easy')
-    // SEND RESPONSE
-    res.status(200).json({
-        status: 'success',
-        results: tours.length,
-        data: {
-            tours
-        }
-    })
-})
+exports.getAllTours = factory.getAll(Tour)
+// exports.getAllTours = catchAsync(async (req, res, next) => {
+//     // EXCUTE QUERY
+//     const features = new APIFeatures(Tour.find(), req.query)
+//         .filter()
+//         .sort()
+//         .limitFields()
+//         .paginate()
+//     const tours = await features.query
+//     // const query = Tour.find()
+//     //     .where('duration')
+//     //     .equals(5)
+//     //     .where('difficulty')
+//     //     .equals('easy')
+//     // SEND RESPONSE
+//     res.status(200).json({
+//         status: 'success',
+//         results: tours.length,
+//         data: {
+//             tours
+//         }
+//     })
+// })
 
-exports.getTour = catchAsync(async (req, res, next) => {
-    // const tour = await Tour.findById(req.params.id).populate('guides')
-    const tour = await Tour.findById(req.params.id).populate('reviews')
-    // 通过发了一个假id 发现await 返回值为null
-    if (!tour) {
-        return next(new AppError('No tour could find with this ID', 404))
-    }
-    // Tour.findOne({_id:req.params.id})
-    res.status(200).json({
-        status: 'success',
-        // results: tours.length,
-        data: {
-            tour
-        }
-    })
-})
+exports.getTour = factory.getOne(Tour, { path: 'reviews' })
+// exports.getTour = catchAsync(async (req, res, next) => {
+//     // const tour = await Tour.findById(req.params.id).populate('guides')
+//     const tour = await Tour.findById(req.params.id).populate('reviews')
+//     // 通过发了一个假id 发现await 返回值为null
+//     if (!tour) {
+//         return next(new AppError('No tour could find with this ID', 404))
+//     }
+//     // Tour.findOne({_id:req.params.id})
+//     res.status(200).json({
+//         status: 'success',
+//         // results: tours.length,
+//         data: {
+//             tour
+//         }
+//     })
+// })
 
 exports.createTour = factory.createOne(Tour)
 exports.updateTour = factory.updateOne(Tour)
