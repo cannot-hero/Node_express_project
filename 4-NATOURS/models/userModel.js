@@ -49,15 +49,15 @@ const userSchema = new mongoose.Schema({
         select: false
     }
 })
-userSchema.pre('save', async function(next) {
-    // when the password is changed or created
-    if (!this.isModified('password')) return next()
-    // hash the password with cost of 12, hash is a async version
-    this.password = await bcrypt.hash(this.password, 12)
-    // 加密之后删除确认密码字段, passwordConfirm只是一个需要输入的字段，但不需要持久化保存在数据库中
-    this.passwordConfirm = undefined
-    next()
-})
+// userSchema.pre('save', async function(next) {
+//     // when the password is changed or created
+//     if (!this.isModified('password')) return next()
+//     // hash the password with cost of 12, hash is a async version
+//     this.password = await bcrypt.hash(this.password, 12)
+//     // 加密之后删除确认密码字段, passwordConfirm只是一个需要输入的字段，但不需要持久化保存在数据库中
+//     this.passwordConfirm = undefined
+//     next()
+// })
 
 userSchema.pre('save', function(next) {
     // 如果没有修改或密码或者是新创建用户

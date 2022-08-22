@@ -6,3 +6,5 @@ jspm_packages/
 
 development.env
 production.env
+
+import-dev-data.js

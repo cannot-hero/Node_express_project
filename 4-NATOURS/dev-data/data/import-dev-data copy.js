@@ -3,8 +3,13 @@ const mongoose = require('mongoose')
 //server文件处理 database configurations, error handling staff or environment varables
 const dotenv = require('dotenv')
 const Tour = require('../../models/toursModel')
+const Review = require('../../models/reviewModel')
+const User = require('../../models/userModel')
 
-dotenv.config({ path: './development.env' })
+process.env.NODE_ENV = 'development'
+// process.env.NODE_ENV = 'production'
+dotenv.config({ path: `./${process.env.NODE_ENV}.env` })
+// dotenv.config({ path: './development.env' })
 
 const DB = process.env.DATABASE.replace(
     '<PASSWORD>',
@@ -25,6 +30,10 @@ mongoose
     })
 // read json file
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/tours.json`, 'utf-8'))
+const users = JSON.parse(fs.readFileSync(`${__dirname}/users.json`, 'utf-8'))
+const reviews = JSON.parse(
+    fs.readFileSync(`${__dirname}/reviews.json`, 'utf-8')
+)
 
 // import data into database
 const importData = async () => {
