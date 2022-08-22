@@ -2078,3 +2078,44 @@ authentication 證明鑒定
 authorization 授權
 
 要捋清楚哪些身份的人可以访问哪些api
+
+## 165 reading performance in mongodb
+
+indexes are so important
+
+```js
+const doc = await features.query.explain()
+```
+
+返回的结果中多了一个`executionStats`字段
+
+可以发现扫描了九个doc，获取了3个doc，如果数据库中数据量很大，这会导致性能下降，在集合中特定字段上创建索引可以解决这一问题，mongo自动创建索引在id字段
+
+ID index是一个有序表，没有index，mongo就得一个一个的查找
+
+>  **可以在需要经常查找的字段上添加index**
+
+```js
+//对经常搜索的字段添加index  1 代表升序 -1 代表降序
+tourSchema.index({ price: 1 })
+```
+
+每一个unique字段mongoose都会为其创建唯一的索引
+
+> **可以用复合索引来搜索，提高效率  compound index**
+
+```js
+tourSchema.index({ price: 1, ratingsAverage: -1 })
+```
+
+
+
+如何选择需要索引的字段？为什么不在所有字段上设置索引？
+
+研究访问模式，要搞清楚哪些字段被访问的最多，然后为这些字段设置索引
+
+因为每个索引都会占用资源
+
+## 166 calculating average rating on tour
+
+storage a summary of related data set on the main data set

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-
+const Tour = require('./toursModel')
 // review / rating/ createdAt / ref to the tour / ref to user
 // 父引用， 这样tour不知道有多少review
 const reviewSchema = new mongoose.Schema(
@@ -54,6 +54,39 @@ reviewSchema.pre(/^find/, function(next) {
     next()
 })
 
+// 静态方法  因为要用到model
+reviewSchema.statics.calAverageRatings = async function(tourId) {
+    // this指向当前model
+    const stats = await this.aggregate([
+        {
+            //select a tour we want to update
+            $match: { tour: tourId }
+        },
+        {
+            // 找出id对应这个tour的评论
+            $group: {
+                _id: '$tour', // 声明根据什么字段进行分组
+                nRating: { $sum: 1 },
+                avgRating: { $avg: '$rating' }
+            }
+        }
+    ])
+    console.log(stats)
+    // 更新Tour中相应字段
+    await Tour.findByIdAndUpdate(tourId, {
+        ratingsQuantity: stats[0].nRating,
+        ratingsAverage: stats[0].avgRating
+    })
+}
+
+// 在中间件中使用静态方法， 每次有创建评论被创建时  这里不能用pre，pre时当前document还没有被创建
+// reviewSchema.pre('save', function(next) {
+reviewSchema.post('save', function() {
+    // post 无法访问到next
+    // this points to current review
+    // Review.calAverageRatings(this.tour)
+    this.constructor.calAverageRatings(this.tour)
+})
 const Review = mongoose.model('Review', reviewSchema)
 
 module.exports = Review
