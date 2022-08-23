@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { findByIdAndUpdate, findByIdAndDelete } = require('./toursModel')
 const Tour = require('./toursModel')
 // review / rating/ createdAt / ref to the tour / ref to user
 // 父引用， 这样tour不知道有多少review
@@ -71,12 +72,19 @@ reviewSchema.statics.calAverageRatings = async function(tourId) {
             }
         }
     ])
-    console.log(stats)
-    // 更新Tour中相应字段
-    await Tour.findByIdAndUpdate(tourId, {
-        ratingsQuantity: stats[0].nRating,
-        ratingsAverage: stats[0].avgRating
-    })
+    // console.log(stats)
+    if (stats.length > 0) {
+        // 更新Tour中相应字段
+        await Tour.findByIdAndUpdate(tourId, {
+            ratingsQuantity: stats[0].nRating,
+            ratingsAverage: stats[0].avgRating
+        })
+    } else {
+        await Tour.findByIdAndUpdate(tourId, {
+            ratingsQuantity: 0,
+            ratingsAverage: 4.5
+        })
+    }
 }
 
 // 在中间件中使用静态方法， 每次有创建评论被创建时  这里不能用pre，pre时当前document还没有被创建
@@ -86,6 +94,23 @@ reviewSchema.post('save', function() {
     // this points to current review
     // Review.calAverageRatings(this.tour)
     this.constructor.calAverageRatings(this.tour)
+})
+
+// findByIdAndUpdate
+// findByIdAndDelete  这两个只有query middleware 没有document middleware
+// 所以用findOneAnd  pre时query还未执行，所以可以访问到query，post时query已经执行，所以访问不到query
+reviewSchema.pre(/^findOneAnd/, async function(next) {
+    // the goal is to access the current document
+    // access to this document
+    // const r = await this.findOne() 将r挂载在this上
+    this.r = await this.findOne()
+    // console.log(this.r)
+    next()
+})
+// pass a data from pre-middleware to the post middleware
+reviewSchema.post(/^findOneAnd/, async function() {
+    // this.r = await this.findOne()  //query已执行，所以这一行无法执行
+    await this.r.constructor.calAverageRatings(this.r.tour)
 })
 const Review = mongoose.model('Review', reviewSchema)
 
