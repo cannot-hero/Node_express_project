@@ -2220,3 +2220,42 @@ const tourSchema = new mongoose.Schema(
 )
 ```
 
+## 169 geospatial queries
+
+```js
+// geospatial
+//'/tours-within/:distance/center/:latlng/unit/:unit'
+// /tours-within/233/30.523867,104.042892/unit/mi
+exports.getToursWithin = catchAsync(async (req, res, next) => {
+    const { distance, latlng, unit } = req.params
+    const [lat, lng] = latlng.split(',')
+    // mi = mile
+    const radius = unit === 'mi' ? distance / 3963.2 : distance / 6378.1
+    if (!lat || !lng) {
+        return next(
+            new AppError(
+                'Please provide latitude and longitude in the format lat,lng',
+                400
+            )
+        )
+    }
+    const tours = await Tour.find({
+        // geoWithin 范围内  centerSphere表示以某一为中心的球体，接收一个数组，center radius
+        // startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+        startLocation: { $geoWithin: { $centerSphere: [[lng, lat], radius] } }
+    })
+    res.status(200).json({
+        status: 'success',
+        results: tours.length,
+        data: {
+            data: tours
+        }
+    })
+})
+```
+
+```js
+// 2dsphere 二维球体   加快寻找速度？
+tourSchema.index({ startLocation: '2dsphere' })
+```
+

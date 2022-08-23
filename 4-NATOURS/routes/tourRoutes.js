@@ -8,7 +8,8 @@ const {
     deleteTour,
     aliasTopTours,
     getTourStats,
-    getMonthlyPlan
+    getMonthlyPlan,
+    getToursWithin
 } = require('../controllers/tourController')
 const authController = require('./../controllers/authController')
 const reviewRouter = require('./reviewRoutes')
@@ -41,7 +42,12 @@ router
         authController.restrictTo('admin', 'lead-guide'),
         createTour
     )
-
+// geospatial
+router
+    .route('/tours-within/:distance/center/:latlng/unit/:unit')
+    .get(getToursWithin)
+// /tours-distance?distance=233&center=-40,45&unit=mi
+// /tours-distance/233/-40,45/unit=mi
 router.route('/tour-stats').get(getTourStats)
 router
     .route('/monthly-plan/:year')

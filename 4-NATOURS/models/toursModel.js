@@ -146,6 +146,8 @@ const tourSchema = new mongoose.Schema(
 // tourSchema.index({ price: 1 })
 tourSchema.index({ price: 1, ratingsAverage: -1 })
 tourSchema.index({ slug: 1 })
+// 2dsphere 二维球体
+tourSchema.index({ startLocation: '2dsphere' })
 // get 相当于定义了一个getter  getter不能用箭头函数(arrow function)，因为要用到this regular function
 tourSchema.virtual('durationWeeks').get(function() {
     return this.duration / 7
