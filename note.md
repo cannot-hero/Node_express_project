@@ -2189,3 +2189,34 @@ reviewSchema.post(/^findOneAnd/, async function() {
 ```
 
 ## 168 preventing duplicate reviews
+
+use unique index 将用户和评论两个字段设置为unique，但是会导致每一个用户只能发一个评论
+
+unique  要保证用户和旅游的结合总是unique的  the combination of user and tour
+
+利用复合索引 compound index
+
+```js
+// index, each combination of tour and user will be unique
+// reviewSchema.index({ tour: 1, user: 1 }, { unique: true })
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true })
+```
+
+让评分四舍五入
+
+```js
+const tourSchema = new mongoose.Schema(
+    {
+		ratingsAverage: {
+            type: Number,
+            default: 4.5,
+            // min max 不仅适用于数字，也适用于日期Date
+            min: [1, 'Rating must be above than 1.0'],
+            max: [5, 'Rating must be below than 5.0'],
+            // 字段数据被更新时会执行 each time a new value is set for this field
+            set: val => Math.round(val * 10) / 10 // Math.round会四舍五入
+        },
+    }
+)
+```
+

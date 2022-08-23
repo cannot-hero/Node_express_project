@@ -36,7 +36,9 @@ const reviewSchema = new mongoose.Schema(
         toObject: { virtuals: true }
     }
 )
-
+// index, each combination of tour and user will be unique
+// reviewSchema.index({ tour: 1, user: 1 }, { unique: true })
+reviewSchema.index({ tour: 1, user: 1 }, { unique: true })
 // populate reviews 填充两个字段，需要调用两次populate
 reviewSchema.pre(/^find/, function(next) {
     // this points to current query

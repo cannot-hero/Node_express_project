@@ -44,7 +44,9 @@ const tourSchema = new mongoose.Schema(
             default: 4.5,
             // min max 不仅适用于数字，也适用于日期Date
             min: [1, 'Rating must be above than 1.0'],
-            max: [5, 'Rating must be below than 5.0']
+            max: [5, 'Rating must be below than 5.0'],
+            // 字段数据被更新时会执行 each time a new value is set for this field
+            set: val => Math.round(val * 10) / 10 // Math.round会四舍五入
         },
         ratingsQuantity: {
             type: Number,
