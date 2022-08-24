@@ -2259,3 +2259,63 @@ exports.getToursWithin = catchAsync(async (req, res, next) => {
 tourSchema.index({ startLocation: '2dsphere' })
 ```
 
+## 170 使用geospatial aggregation来计算距离
+
+先写route，了解需要什么参数
+
+```js
+// 计算某一旅游到其他旅游的距离
+router.route('/distances/:latlng/unit/:unit').get(getDistances)
+```
+
+
+
+```js
+exports.getDistances = catchAsync(async (req, res, next) => {
+    const { latlng, unit } = req.params
+    const [lat, lng] = latlng.split(',')
+    const multiplier = unit === 'mi' ? 0.000621371192 : 0.001
+    // mi = mile
+    if (!lat || !lng) {
+        return next(
+            new AppError(
+                'Please provide latitude and longitude in the format lat,lng',
+                400
+            )
+        )
+    }
+    // aggregate在model上调用  agrregate用数组啊 聚合管道的所有阶段
+    const distances = await Tour.aggregate([
+        {
+            //$geoNear always needs to be the first stage,同时要求至少一个字段有geoindex
+            // 如果有多个字段有geoindex，则需要用key来声明需要用于计算的字段
+            $geoNear: {
+                // near 用于定义是哪个点附近
+                near: {
+                    type: 'Point',
+                    coordinates: [lng * 1, lat * 1]
+                },
+                // 记录计算出来的距离
+                distanceField: 'distance',
+                // 将距离转化为公里
+                distanceMultiplier: multiplier
+            }
+        },
+        {
+            $project: {
+                // 声明要保留的字段
+                distance: 1,
+                name: 1
+            }
+        }
+    ])
+    res.status(200).json({
+        status: 'success',
+        data: {
+            data: distances
+        }
+    })
+})
+
+```
+

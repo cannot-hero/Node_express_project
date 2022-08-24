@@ -9,7 +9,8 @@ const {
     aliasTopTours,
     getTourStats,
     getMonthlyPlan,
-    getToursWithin
+    getToursWithin,
+    getDistances
 } = require('../controllers/tourController')
 const authController = require('./../controllers/authController')
 const reviewRouter = require('./reviewRoutes')
@@ -48,6 +49,10 @@ router
     .get(getToursWithin)
 // /tours-distance?distance=233&center=-40,45&unit=mi
 // /tours-distance/233/-40,45/unit=mi
+
+// 计算某一旅游到其他旅游的距离
+router.route('/distances/:latlng/unit/:unit').get(getDistances)
+
 router.route('/tour-stats').get(getTourStats)
 router
     .route('/monthly-plan/:year')
