@@ -2384,3 +2384,53 @@ html
         p This is some texts
 ```
 
+## 176 create base template
+
+CSS 架构 BEM架构  block element modifier
+
+翻译这个框架太痛苦了
+
+```python
+doctype html
+html 
+    head
+        meta(charset='UTF-8')
+        meta(name='iewport' content='width=device-width, initial-scale=1.0')
+        // 插值
+        //- <link rel='stylesheet' href='css/style.css'/>
+        //- use attributes
+        link(rel='stylesheet', href='css/style.css')
+        link(rel='shortcut icon' type='image/png' href='img/favicon.png')
+        link(rel='stylesheet',href='https://fonts.googleapis.com/css?family=Lato:300,300i,700')
+        title Natours | Exciting tours for adventurous people
+
+    body
+        // HEADER
+        header.header
+            nav.nav.nav--tours
+                a.nav__el(href='#') All Tours
+            .header__logo
+                img(src='img/logo-white.png' alt='Natours logo')
+            nav.nav.nav__user
+                //- a.nav__el(href='#') My bookings
+                //- a.nav__el(href='#')
+                //-     img.nav__user-img(src='img/user.jpg' alt='User photo')
+                //-     span Jonas
+                button.nav__el Log in
+                button.nav__el.nav__el--cta Sign up
+        // CONTENT
+        main.main
+            h1= tour
+        // FOOTER
+        footer.footer
+            .footer__logo
+                img(src='img/logo-green.png' alt='Natours logo')
+            ul.footer__nav
+                li: a(href='#') About us
+                li: a(href='#') Download apps
+                li: a(href='#') Become a guide
+                li: a(href='#') Careers
+                li: a(href='#') Contact
+            p.footer__copyright &copy; by Mou Bio. All rights reserved.
+```
+
