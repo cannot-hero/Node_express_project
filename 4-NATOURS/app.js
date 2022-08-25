@@ -1,3 +1,4 @@
+const path = require('path')
 const express = require('express')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
@@ -13,6 +14,14 @@ const userRouter = require('./routes/userRoutes')
 const reviewRouter = require('./routes/reviewRoutes')
 
 const app = express()
+// define view engine
+app.set('view engine', 'pug')
+// 定义视图所在位置，路径选择相对于启动node app的地方，即项目根目录
+app.set('views', path.join(__dirname, 'views'))
+
+// 静态文件托管  托管public下的文件
+// app.use(express.static(`${__dirname}/public`))
+app.use(express.static(path.join(__dirname, 'public')))
 // console.log(process.env.NODE_ENV)
 // middleware  中间件可以修改传入的请求数据 request data
 // in the middle of request and response
@@ -54,8 +63,7 @@ app.use(
         ]
     })
 )
-// 静态文件托管  托管public下的文件
-app.use(express.static(`${__dirname}/public`))
+
 // test middleware
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString()
@@ -78,7 +86,15 @@ app.use((req, res, next) => {
 // app.delete('/api/v1/tours/:id', deleteTour)
 
 // 3. ROUTE
-
+// 连接模板 app.get('/') '/' root of website
+app.get('/', (req, res) => {
+    // render会渲染相应的模板
+    res.status(200).render('base', {
+        // 此处设置的变量，在pug中被称为locals
+        tour: 'The Forest Hiker',
+        user: 'Shu Bio'
+    })
+})
 // mounting the router
 // tourRoute only runs on '/api/v1/tours'
 app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter

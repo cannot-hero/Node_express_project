@@ -1,0 +1,19 @@
+doctype html
+html 
+    head
+        // 插值
+        title Natours | #{tour}
+        //- <link rel='stylesheet' href='css/style.css'/>
+        //- use attributes
+        link(rel='stylesheet', href='css/style.css')
+        link(rel='shortcut icon' type='image/png' href='img/favicon.png')
+    body
+        //- pass data to template
+        // Buffer code
+        h1= tour
+        h2= user.toUpperCase()
+        // h1 The Park Camper(html文件中可见的注释方式)
+        //- unbuffered code就是不会给输出添加任何内容
+        - const x= 9
+        h2= 2*x
+        p This is some texts

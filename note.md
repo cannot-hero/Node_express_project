@@ -1780,6 +1780,8 @@ app.use(
 )
 ```
 
+# modeling data and advanced monggose
+
 ## 146  ⭐ DATA MODELING
 
 将非结构化数据转化为的结构化数据的过程
@@ -2317,5 +2319,68 @@ exports.getDistances = catchAsync(async (req, res, next) => {
     })
 })
 
+```
+
+# SSR with PUG tamplates
+
+![image-20220824210209742](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220824210209742.png)
+
+![image-20220824210345927](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220824210345927.png)
+
+## 174 pug
+
+template engine 使用模板引擎，然后可以轻松填充模板
+
+模板引擎：pug,handlebars,EGS
+
+```js
+// define view engine
+app.set('view engine', 'pug')
+// 定义视图所在位置，路径选择相对于启动node app的地方，即项目根目录
+app.set('views', path.join(__dirname, 'views'))
+
+// 连接模板 app.get('/') '/' root of website
+app.get('/',(req,res)=>{
+    // render会渲染相应的模板
+    res.status(200).render('base')
+})
+```
+
+## 175 first steps with pug
+
+pug是空格敏感的
+
+pass data to template
+
+```js
+app.get('/', (req, res) => {
+    // render会渲染相应的模板
+    res.status(200).render('base', {
+        tour: 'The Forest Hiker',
+        user: 'Shu Bio'
+    })
+})
+```
+
+```js
+doctype html
+html 
+    head
+        // 插值
+        title Natours | #{tour}
+        //- <link rel='stylesheet' href='css/style.css'/>
+        //- use attributes
+        link(rel='stylesheet', href='css/style.css')
+        link(rel='shortcut icon' type='image/png' href='img/favicon.png')
+    body
+        //- pass data to template
+        // Buffer code
+        h1= tour
+        h2= user.toUpperCase()
+        // h1 The Park Camper(html文件中可见的注释方式)
+        //- unbuffered code就是不会给输出添加任何内容
+        - const x= 9
+        h2= 2*x
+        p This is some texts
 ```
 
