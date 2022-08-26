@@ -2434,3 +2434,16 @@ html
             p.footer__copyright &copy; by Mou Bio. All rights reserved.
 ```
 
+## 177 include one file to pug template
+
+```pug
+    body
+        // HEADER
+        include _header
+        // CONTENT
+        main.main
+            h1= tour
+        // FOOTER
+        include _footer
+```
+
