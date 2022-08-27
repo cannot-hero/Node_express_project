@@ -12,6 +12,7 @@ const globalErrorHandler = require('./controllers/errorController')
 const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const reviewRouter = require('./routes/reviewRoutes')
+const viewRouter = require('./routes/viewRoutes')
 
 const app = express()
 // define view engine
@@ -85,28 +86,9 @@ app.use((req, res, next) => {
 //delete
 // app.delete('/api/v1/tours/:id', deleteTour)
 
-// 3. ROUTE
-// 连接模板 app.get('/') '/' root of website
-app.get('/', (req, res) => {
-    // render会渲染相应的模板
-    res.status(200).render('base', {
-        // 此处设置的变量，在pug中被称为locals
-        tour: 'The Forest Hiker',
-        user: 'Shu Bio'
-    })
-})
-app.get('/overview', (req, res) => {
-    res.status(200).render('overview', {
-        title: 'All Tours'
-    })
-})
-app.get('/tour', (req, res) => {
-    res.status(200).render('tour', {
-        title: 'The Forest Hiker Tour'
-    })
-})
 // mounting the router
 // tourRoute only runs on '/api/v1/tours'
+app.use('/', viewRouter) // 在‘/’route上使用viewRouter
 app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
 app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
 app.use('/api/v1/reviews', reviewRouter) // 在‘/api/v1/tours’route上使用tourRouter

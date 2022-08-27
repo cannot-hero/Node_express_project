@@ -2460,3 +2460,45 @@ one detail page
 include 父模板包含子模版
 
 extends 子模版包含父模板
+
+## 179 refactoring
+
+对前端同样要建立MVC架构
+
+router,controller fore views
+
+写路由，挂载router
+
+```js
+const express = require('express')
+const viewController = require('./../controllers/viewsController')
+
+const router = express.Router()
+
+// 3. ROUTE
+// 连接模板 router.get('/') '/' root of website
+router.get('/', viewController.getOverview)
+router.get('/tour', viewController.getTour)
+
+module.exports = router
+```
+
+```js
+// viewController.js
+exports.getOverview = (req, res) => {
+    res.status(200).render('overview', {
+        title: 'All Tours'
+    })
+}
+exports.getTour = (req, res) => {
+    res.status(200).render('tour', {
+        title: 'The Forest Hiker Tour'
+    })
+}
+```
+
+```js
+// app.js
+app.use('/', viewRouter) // 在‘/’route上使用viewRouter
+```
+
