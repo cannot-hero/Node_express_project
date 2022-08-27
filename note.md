@@ -2502,3 +2502,6 @@ exports.getTour = (req, res) => {
 app.use('/', viewRouter) // 在‘/’route上使用viewRouter
 ```
 
+
+
+MVC前端不用写接口？只用从数据库找数据？前端鉴权怎么写？
