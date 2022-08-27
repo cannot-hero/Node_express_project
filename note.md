@@ -2447,3 +2447,16 @@ html
         include _footer
 ```
 
+## 178 extend
+
+通过继承(扩展,extend)，可以使每个页面的布局都基本相同（感觉类似于vue组件化）
+
+one overview page
+
+one detail page
+
+> s1 create route
+
+include 父模板包含子模版
+
+extends 子模版包含父模板
