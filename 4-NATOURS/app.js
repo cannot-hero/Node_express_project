@@ -6,6 +6,7 @@ const helmet = require('helmet')
 const mongoSanitize = require('express-mongo-sanitize')
 const xss = require('xss-clean')
 const hpp = require('hpp')
+const cookieParser = require('cookie-parser')
 
 const AppError = require('./utils/appError')
 const globalErrorHandler = require('./controllers/errorController')
@@ -43,7 +44,8 @@ const limiter = rateLimit({
 // 全局限制
 app.use('/api', limiter)
 // Body parser, reading data from body into req.body
-app.use(express.json({ limit: '10kb' })) // 可以获取请求体
+app.use(express.json({ limit: '10kb' })) // 可以获取请求体 解析req体中数据
+app.use(cookieParser()) // 解析req中的cookie
 
 // data sanitization against NoSQL query injection
 // 查看req.body, req.query,req.params 过滤掉所有$和.
@@ -68,7 +70,7 @@ app.use(
 // test middleware
 app.use((req, res, next) => {
     req.requestTime = new Date().toISOString()
-    // console.log(req.headers)
+    console.log(req.cookies)
     next()
 })
 

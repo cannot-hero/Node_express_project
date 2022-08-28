@@ -22,5 +22,7 @@ html
             h1 This is a placeholder heading.
         // FOOTER
         include _footer
-        
+        //- this will expose an axios object to the global scope
+        script(src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.min.js')
+        script(src='/js/login.js')
         script(src='/js/mapbox.js')

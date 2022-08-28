@@ -2559,7 +2559,7 @@ section.section-map
 mapbox.js
 
 ```js
-const locations = JSON.parse(document.getElementById('map').dataset.locations)
+const locations = JSON.parse(document.getElementById('map').dataset.locations
 // console.log(locations)
 mapboxgl.accessToken =    'pk.eyJ1Ijoic2h1c2h1YmlvIiwiYSI6ImNsN2QxZGdxdjE2aWYzd21pazFteGY3OGMifQ.fb3z0dSPrKhHjKu50zO-sg'
 var map = new mapboxgl.Map({
@@ -2607,3 +2607,45 @@ map.fitBounds(bounds, {
 
 
 css也能做验证？好强
+
+
+
+## 187 login
+
+登录时后端会发一个cookie，并且每次请求都会携带cookie
+
+要在后端读取cookie，需要一个中间件  cookie-parser
+
+```js
+// Body parser, reading data from body into req.body
+app.use(express.json({ limit: '10kb' })) // 可以获取请求体 解析req体中数据
+app.use(cookieParser()) // 解析req中的cookie
+```
+
+权限
+
+```js
+exports.protect = catchAsync(async (req, res, next) => {
+    // 1 getting token and check of it's there
+    // 一般是把token放在http请求头
+    let token
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
+        token = req.headers.authorization.split(' ')[1]
+    } else if (req.cookies.jwt) {
+        // 通过cookie验证用户
+        token = req.cookies.jwt
+    }
+    // console.log(token)
+    if (!token) {
+        return next(
+            new AppError(
+                'You are not logged in! Please log in to get access.',
+                401
+            )
+        )
+    }
+```
+
