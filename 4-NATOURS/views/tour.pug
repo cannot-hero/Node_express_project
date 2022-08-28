@@ -1,7 +1,11 @@
 extends base
 include _reviewCard
 //- 追加到原block尾部的，不会覆盖原block prepend会加在原block头部
-block append head
+block append head 
+    script(src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js')
+    link(href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet')
+
+
     //- script(src='/js/mapbox.js')
 mixin overviewBox(label,text,icon)
     .overview-box__detail
