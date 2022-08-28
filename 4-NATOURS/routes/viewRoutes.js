@@ -7,5 +7,6 @@ const router = express.Router()
 // 连接模板 router.get('/') '/' root of website
 router.get('/', viewController.getOverview)
 router.get('/tour/:slug', viewController.getTour)
+router.get('/login', viewController.getLoginForm)
 
 module.exports = router
