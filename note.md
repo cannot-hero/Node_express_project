@@ -2505,3 +2505,31 @@ app.use('/', viewRouter) // 在‘/’route上使用viewRouter
 
 
 MVC前端不用写接口？只用从数据库找数据？前端鉴权怎么写？
+
+## 183 Building tour page
+
+conditionals and mixins
+
+
+
+mixin是可以重复使用的代码片段，可以传入参数，like function
+
+```pug
+mixin overviewBox(label,text,icon)
+    .overview-box__detail
+        svg.overview-box__icon
+            use(xlink:href=`/img/icons.svg#icon-${icon}`)
+        span.overview-box__label= label
+        span.overview-box__text= text
+```
+
+```js
+// 声明js
+- const date = tour.startDates[0].toLocaleString('en-us',{month:'long', year:'numeric'})
+// 调用mixin
++overviewBox('Next date', date, 'calendar')
++overviewBox('Difficulty', tour.difficulty, 'trending-up')
++overviewBox('Participants', `${tour.maxGroupSize} people`, 'user')
++overviewBox('Rating', `${tour.ratingsAverage} / 5`, 'star')
+```
+

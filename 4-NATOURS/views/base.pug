@@ -5,9 +5,9 @@ html
         meta(name='iewport' content='width=device-width, initial-scale=1.0')
         // 插值
         //- <link rel='stylesheet' href='css/style.css'/>
-        //- use attributes
-        link(rel='stylesheet', href='css/style.css')
-        link(rel='shortcut icon' type='image/png' href='img/favicon.png')
+        //- use attributes  使用相对路径 使得从 root开头
+        link(rel='stylesheet', href='/css/style.css')
+        link(rel='shortcut icon' type='image/png' href='/img/favicon.png')
         link(rel='stylesheet',href='https://fonts.googleapis.com/css?family=Lato:300,300i,700')
         title Natours | #{title}
 
