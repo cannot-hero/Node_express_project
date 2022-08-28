@@ -2649,3 +2649,75 @@ exports.protect = catchAsync(async (req, res, next) => {
     }
 ```
 
+## 188 login p2
+
+后端进行条件渲染
+
+要判断用户是否登录，同时要pug模板链接到js中数据
+
+```js
+// 仅用于渲染页面，不会有报错
+exports.isLoggedIn = catchAsync(async (req, res, next) => {
+    if (req.cookies.jwt) {
+        // 1 verigy the token
+        const decode = await promisify(jwt.verify)(
+            req.cookies.jwt,
+            process.env.JWT_SECRET
+        )
+        // console.log(decode)
+        // 2 check if user still exist
+        const currentUser = await User.findById(decode.id)
+        if (!currentUser) {
+            return next()
+        }
+        // 3 check the user changed password after the jwt issued
+        if (currentUser.changePasswordAfter(decode.iat)) {
+            return next()
+        }
+        // THERE IS A LOGGED IN USER
+        // 每一个pug template都可以访问到response.locals
+        res.locals.user = currentUser
+        // req.user = currentUser
+        return next()
+    }
+    next()
+})
+```
+
+```pug
+nav.nav.nav__user
+    if user
+        a.nav__el.nav__el--logout Log out
+        a.nav__el(href='#')
+            img.nav__user-img(src=`/img/users/${user.photo}` alt=`Photo of ${user.name}`)
+            span= user.name.split(' ')[0]
+    else
+        a.nav__el(href='/login') Log in
+        a.nav__el.nav__el--cta(href='#') Sign up
+```
+
+```js
+// login.js
+const login = async (email, password) => {
+    // alert({ email, password }) 注意先确认函数可以work
+    try {
+        const res = await axios({
+            method: 'post',
+            url: 'http://127.0.0.1:3000/api/v1/users/login',
+            data: {
+                email,
+                password
+            }
+        })
+        if (res.data.status === 'success') {
+            alert('Login successfully!')
+            window.setTimeout(() => {
+                location.assign('/')
+            }, 1500)
+        }
+    } catch (err) {
+        alert(err.response.data.message)
+    }
+}
+```
+
