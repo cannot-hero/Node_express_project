@@ -1,7 +1,8 @@
 extends base
 include _reviewCard
-
-
+//- 追加到原block尾部的，不会覆盖原block prepend会加在原block头部
+block append head
+    //- script(src='/js/mapbox.js')
 mixin overviewBox(label,text,icon)
     .overview-box__detail
         svg.overview-box__icon
@@ -63,7 +64,7 @@ block content
                 img.picture-box__img(src=`/img/tours/${image}`, alt=`The Park Camper Tour ${index + 1}`,class=`picture-box__img--${index + 1}`)
 
     section.section-map
-        #map
+        #map(data-locations=`${JSON.stringify(tour.locations)}`)
 
     section.section-reviews
         .reviews
