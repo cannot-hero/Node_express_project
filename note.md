@@ -2533,3 +2533,15 @@ mixin overviewBox(label,text,icon)
 +overviewBox('Rating', `${tour.ratingsAverage} / 5`, 'star')
 ```
 
+conditional
+
+```js
+.overview-box__detail
+    img.overview-box__img(src=`/img/users/${guide.photo}`, alt=`${guide.name}`)
+    - if(guide.role==='lead-guide')
+        span.overview-box__label Lead Guide
+    - if(guide.role==='guide')
+        span.overview-box__label Tour Guide
+    span.overview-box__text= guide.name
+```
+
