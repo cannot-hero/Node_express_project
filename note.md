@@ -2727,6 +2727,10 @@ const login = async (email, password) => {
 
 
 
+使用@babel/polyfill转译
+
+
+
 警报
 
 ```js
@@ -2748,4 +2752,58 @@ export const showAlert = (type, msg) => {
     window.setTimeout(hideAlert, 5000)
 }
 ```
+
+## 190 log out users
+
+目前logout只能手动删除cookie
+
+cookie目前是httponly的cookie，所以不能通过浏览器操作cookie
+
+发送一个没有携带token的相同cookie，覆盖掉原先的cookie，同时把这个cookie的有效时间设置的很短，就达到了安全注销的效果
+
+写接口
+
+```js
+//authController.js
+exports.logout = (req, res, next) => {
+    res.cookie('jwt', 'loggedout', {
+        expires: new Date(Date.now() + 1000 * 10),
+        httpOnly: true
+    })
+    res.status(200).json({
+        status: 'success'
+    })
+}
+
+// userRoutes.js
+router.get('/logout', authController.logout)
+```
+
+发请求
+
+```js
+// login.js
+export const logout = async () => {
+    try {
+        const res = await axios({
+            method: 'get',
+            url: 'http://127.0.0.1:3000/api/v1/users/logout'
+        })
+        // reload from server, not from cache
+        if (res.data.status === 'success') location.reload(true)
+    } catch (err) {
+        console.log(err.response)
+        showAlert('error', 'Error logging out, try again!')
+    }
+}
+```
+
+```js
+// index.js
+const logOutBtn = document.querySelector('.nav__el--logout')
+// logout
+if (logOutBtn) logOutBtn.addEventListener('click', logout)
+```
+
+## 191 rendering error pages
 

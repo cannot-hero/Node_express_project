@@ -81,6 +81,16 @@ exports.login = catchAsync(async (req, res, next) => {
     createSendToken(user, 200, res)
 })
 
+exports.logout = (req, res, next) => {
+    res.cookie('jwt', 'loggedout', {
+        expires: new Date(Date.now() + 1000 * 10),
+        httpOnly: true
+    })
+    res.status(200).json({
+        status: 'success'
+    })
+}
+
 // 路由权限
 exports.protect = catchAsync(async (req, res, next) => {
     // 1 getting token and check of it's there
@@ -127,31 +137,35 @@ exports.protect = catchAsync(async (req, res, next) => {
     next()
 })
 // 仅用于渲染页面，不会有报错
-exports.isLoggedIn = catchAsync(async (req, res, next) => {
+exports.isLoggedIn = async (req, res, next) => {
     if (req.cookies.jwt) {
-        // 1 verigy the token
-        const decode = await promisify(jwt.verify)(
-            req.cookies.jwt,
-            process.env.JWT_SECRET
-        )
-        // console.log(decode)
-        // 2 check if user still exist
-        const currentUser = await User.findById(decode.id)
-        if (!currentUser) {
+        try {
+            // 1 verigy the token
+            const decode = await promisify(jwt.verify)(
+                req.cookies.jwt,
+                process.env.JWT_SECRET
+            )
+            // console.log(decode)
+            // 2 check if user still exist
+            const currentUser = await User.findById(decode.id)
+            if (!currentUser) {
+                return next()
+            }
+            // 3 check the user changed password after the jwt issued
+            if (currentUser.changePasswordAfter(decode.iat)) {
+                return next()
+            }
+            // THERE IS A LOGGED IN USER
+            // 每一个pug template都可以访问到response.locals
+            res.locals.user = currentUser
+            // req.user = currentUser
+            return next()
+        } catch (err) {
             return next()
         }
-        // 3 check the user changed password after the jwt issued
-        if (currentUser.changePasswordAfter(decode.iat)) {
-            return next()
-        }
-        // THERE IS A LOGGED IN USER
-        // 每一个pug template都可以访问到response.locals
-        res.locals.user = currentUser
-        // req.user = currentUser
-        return next()
     }
     next()
-})
+}
 
 // 权限和角色管理
 // ...roles 会创建一个数组

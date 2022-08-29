@@ -5,6 +5,7 @@ const authController = require('../controllers/authController')
 const router = express.Router()
 router.post('/signup', authController.signup)
 router.post('/login', authController.login)
+router.get('/logout', authController.logout)
 router.post('/forgetPassword', authController.forgetPassword)
 router.patch('/resetPassword/:token', authController.resetPassword)
 // 注册，登录，忘记密码，重置密码都不需要登录，除此之外都需要登录操作
