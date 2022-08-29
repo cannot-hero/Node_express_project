@@ -4,6 +4,8 @@ jspm_packages/
 # Local History for Visual Studio Code
 .history/
 
+.cache/
+
 development.env
 production.env
 
