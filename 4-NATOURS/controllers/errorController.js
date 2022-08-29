@@ -24,32 +24,58 @@ const handleJWTError = () =>
 
 const handleJWTExpiredError = () =>
     new AppError('Your token has expired! Please login again!', 401)
-const sendErrDevelopment = (err, res) => {
-    res.status(err.statusCode).json({
-        status: err.status,
-        error: err,
-        message: err.message,
-        stack: err.stack
+const sendErrDevelopment = (err, req, res) => {
+    //A) api
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(err.statusCode).json({
+            status: err.status,
+            error: err,
+            message: err.message,
+            stack: err.stack
+        })
+    }
+    //B) render website
+    console.error('ERROR 😨', err)
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: err.message
     })
 }
 
-const sendErrProduction = (err, res) => {
+const sendErrProduction = (err, req, res) => {
     // console.log(err)
     // operational, trusted error, send it to client
-    if (err.isOperational) {
-        res.status(err.statusCode).json({
-            status: err.status,
-            message: err.message
-        })
-        // programming or other unknown error: dont leak the error details
-    } else {
+    // A) API
+    if (req.originalUrl.startsWith('/api')) {
+        // 可信任的错误，发送到客户端
+        if (err.isOperational) {
+            return res.status(err.statusCode).json({
+                status: err.status,
+                message: err.message
+            })
+            // programming or other unknown error: dont leak the error details
+        }
         // 1) log error
         console.error('ERROR 😨', err)
-        res.status(500).json({
+        return res.status(500).json({
             status: 'error',
             message: 'Something went bad badly'
         })
     }
+    // B) render website
+    if (err.isOperational) {
+        return res.status(err.statusCode).render('error', {
+            title: 'Something went wrong!',
+            msg: err.message
+        })
+        // programming or other unknown error: dont leak the error details
+    }
+    // 1) log error
+    console.error('ERROR 😨', err)
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: 'Please try again later.'
+    })
 }
 
 module.exports = (err, req, res, next) => {
@@ -58,11 +84,12 @@ module.exports = (err, req, res, next) => {
     // 根据开发环境和生产环境产生不同报错
     if (process.env.NODE_ENV === 'development') {
         // console.log(err)
-        sendErrDevelopment(err, res)
+        sendErrDevelopment(err, req, res)
     } else if (process.env.NODE_ENV === 'production') {
         // a hard copy
         // let error = { ...err } // 这里浅拷贝不行，信息不全
         let error = JSON.parse(JSON.stringify(err))
+        error.message = err.message
         // console.log(error)
         if (error.name === 'CastError') {
             error = handleCastErrorDB(error)
@@ -76,6 +103,6 @@ module.exports = (err, req, res, next) => {
         if (error.name === 'JsonWebTokenError') error = handleJWTError()
         // token过期
         if (error.name === 'TokenExpiredError') error = handleJWTExpiredError()
-        sendErrProduction(error, res)
+        sendErrProduction(error, req, res)
     }
 }

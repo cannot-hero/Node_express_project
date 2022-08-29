@@ -2807,3 +2807,61 @@ if (logOutBtn) logOutBtn.addEventListener('click', logout)
 
 ## 191 rendering error pages
 
+错误渲染也分信任的错误和不信任的错误
+
+```js
+const sendErrDevelopment = (err, req, res) => {
+    //A) api
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(err.statusCode).json({
+            status: err.status,
+            error: err,
+            message: err.message,
+            stack: err.stack
+        })
+    }
+    //B) render website
+    console.error('ERROR 😨', err)
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: err.message
+    })
+}
+
+const sendErrProduction = (err, req, res) => {
+    // console.log(err)
+    // operational, trusted error, send it to client
+    // A) API
+    if (req.originalUrl.startsWith('/api')) {
+        // 可信任的错误，发送到客户端
+        if (err.isOperational) {
+            return res.status(err.statusCode).json({
+                status: err.status,
+                message: err.message
+            })
+            // programming or other unknown error: dont leak the error details
+        }
+        // 1) log error
+        console.error('ERROR 😨', err)
+        return res.status(500).json({
+            status: 'error',
+            message: 'Something went bad badly'
+        })
+    }
+    // B) render website
+    if (err.isOperational) {
+        return res.status(err.statusCode).render('error', {
+            title: 'Something went wrong!',
+            msg: err.message
+        })
+        // programming or other unknown error: dont leak the error details
+    }
+    // 1) log error
+    console.error('ERROR 😨', err)
+    return res.status(err.statusCode).render('error', {
+        title: 'Something went wrong!',
+        msg: 'Please try again later.'
+    })
+}
+```
+
