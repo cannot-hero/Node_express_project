@@ -2945,3 +2945,64 @@ export const updateData = async (name, email) => {
 }
 ```
 
+## 194 用api更新密码
+
+```js
+// updateSettings.js
+// type可选password或者data
+export const updateSettings = async (data, type) => {
+    try {
+        const url =
+            type === 'password'
+                ? 'http://127.0.0.1:3000/api/v1/users/updateMyPassword'
+                : 'http://127.0.0.1:3000/api/v1/users/updateMe'
+        const res = await axios({
+            url,
+            method: 'patch',
+            data
+        })
+        if (res.data.status === 'success') {
+            showAlert('success', `${type.toUpperCase()} updated successfully!`)
+        }
+    } catch (err) {
+        showAlert('error', err.response.data.message)
+    }
+}
+
+// index.js
+// update user data
+if (userDataForm) {
+    userDataForm.addEventListener('submit', e => {
+        // preventDefault 阻止表单提交
+        e.preventDefault()
+        const name = document.getElementById('name').value
+        const email = document.getElementById('email').value
+        updateSettings({ name, email }, 'data')
+    })
+}
+if (userPasswordForm) {
+    userPasswordForm.addEventListener('submit', async e => {
+        // preventDefault 阻止表单提交
+        e.preventDefault()
+        document.querySelector('.btn--save-password').textContent =
+            'Updating...'
+        const passwordCurrent = document.getElementById('password-current')
+            .value
+        const password = document.getElementById('password').value
+        const passwordConfirm = document.getElementById('password-confirm')
+            .value
+        // 要在更新密码之后清除页面中相应字段， await等待这个完成
+        await updateSettings(
+            { passwordCurrent, password, passwordConfirm },
+            'password'
+        )
+        document.querySelector('.btn--save-password').textContent =
+            'Save password'
+        document.getElementById('password-current').value = ''
+        document.getElementById('password').value = ''
+        document.getElementById('password-confirm').value = ''
+    })
+}
+
+```
+
