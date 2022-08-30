@@ -45,6 +45,8 @@ const limiter = rateLimit({
 app.use('/api', limiter)
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: '10kb' })) // 可以获取请求体 解析req体中数据
+// 解析url编码的数据
+app.use(express.urlencoded({ extended: true, limit: '10kb' }))
 app.use(cookieParser()) // 解析req中的cookie
 
 // data sanitization against NoSQL query injection

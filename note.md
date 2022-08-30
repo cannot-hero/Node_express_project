@@ -2888,3 +2888,60 @@ router.get('/me', authController.protect, viewController.getAccount)
 a.nav__el(href='/me')
 ```
 
+## 193 更新用户数据
+
+1 通过api发一个post请求 like login
+
+2 在表单上指定post方法 同时将要发送的url声明好 --- 缺点，会导致页面强行重新加载，同时需要写其他的路由  好处，不用api
+
+>  s1 在form上指定终端
+
+```js
+form(action='/submit-user-data' method='POST')
+```
+
+> s2 声明要携带的表单字段
+
+```js
+input(type='text',name='name')
+input(type='text',name='email')
+```
+
+## 193 用api更新用户数据
+
+获取element，然后发请求
+
+```js
+//index.js
+const userDataForm = document.querySelector('.form-user-data')
+// update user data
+if (userDataForm) {
+    userDataForm.addEventListener('submit', e => {
+        // preventDefault 阻止表单提交
+        e.preventDefault()
+        const name = document.getElementById('name').value
+        const email = document.getElementById('email').value
+        updateData(name, email)
+    })
+}
+
+//updateSettings.js
+export const updateData = async (name, email) => {
+    try {
+        const res = await axios({
+            url: 'http://127.0.0.1:3000/api/v1/users/updateMe',
+            method: 'patch',
+            data: {
+                name,
+                email
+            }
+        })
+        if (res.data.status === 'success') {
+            showAlert('success', 'Data updated successfully!')
+        }
+    } catch (err) {
+        showAlert('error', err.response.data.message)
+    }
+}
+```
+

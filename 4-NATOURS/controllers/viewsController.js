@@ -1,4 +1,5 @@
 const Tour = require('../models/toursModel')
+const User = require('../models/userModel')
 const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 
@@ -42,3 +43,24 @@ exports.getAccount = (req, res) => {
         title: 'Your account'
     })
 }
+
+exports.updateUserData = catchAsync(async (req, res, next) => {
+    // 永远不要用findByIdAndUpdate来更新密码
+    const updateUser = await User.findByIdAndUpdate(
+        req.user.id,
+        {
+            name: req.body.name,
+            email: req.body.email
+        },
+        {
+            new: true,
+            runvalidators: true
+        }
+    )
+    // 修改完成后再次渲染页面
+    res.status(200).render('account', {
+        title: 'Your account',
+        // 要渲染更新后的数据
+        user: updateUser
+    })
+})
