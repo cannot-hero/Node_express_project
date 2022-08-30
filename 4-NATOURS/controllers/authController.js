@@ -134,6 +134,8 @@ exports.protect = catchAsync(async (req, res, next) => {
     // GRANT ACCESS TO THE PROTECTED ROUTE
     // 将当前user挂载在req上，供后续中间件处理
     req.user = currentUser
+    // 每一个pug template都可以访问到response.locals
+    res.locals.user = currentUser
     next()
 })
 // 仅用于渲染页面，不会有报错

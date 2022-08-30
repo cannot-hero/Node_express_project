@@ -2865,3 +2865,26 @@ const sendErrProduction = (err, req, res) => {
 }
 ```
 
+## 192 Build user account page
+
+1 写模板
+
+2 写接口
+
+```js
+// viewsController.js
+exports.getAccount = (req, res) => {
+    res.status(200).render('account', {
+        title: 'Your account'
+    })
+}
+// viewRoutes.js
+router.get('/me', authController.protect, viewController.getAccount)
+```
+
+3 模板位置匹配链接
+
+```js
+a.nav__el(href='/me')
+```
+
