@@ -1,7 +1,39 @@
+const multer = require('multer')
 const AppError = require('../utils/appError')
 const User = require('./../models/userModel')
 const catchAsync = require('./../utils/catchAsync')
 const factory = require('./handlerFactory')
+
+// 创建一个multer storage 一个multer filter，然后通过upload上传
+const multerStorage = multer.diskStorage({
+    // cb类似于express中的next
+    destination: (req, file, cb) => {
+        cb(null, 'public/img/users')
+    },
+    filename: (req, file, cb) => {
+        // filename user-id-时间戳.jpeg
+        const ext = file.mimetype.split('/')[1]
+        // null 代表no error 第二个参数是文件名
+        cb(null, `user-${req.user.id}-${Date.now()}.${ext}`)
+    }
+})
+// multer filter
+const multerFilter = (req, file, cb) => {
+    // 判断上传的是否是图像，是则通过
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true)
+    } else {
+        cb(new AppError('Not an image. Please upload only images!', 400), false)
+    }
+}
+// 不是直接上传到数据库中，首先上传到file system中，然后将图片的link上传到数据库
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+// 'photo' 表示上传的字段
+exports.uploadUserPhoto = upload.single('photo')
 
 // 剩余字段会成一个数组
 const filterObj = (obj, ...allowedFields) => {
@@ -17,6 +49,8 @@ const filterObj = (obj, ...allowedFields) => {
 
 // 更新用户个人信息
 exports.updateMe = catchAsync(async (req, res, next) => {
+    console.log(req.file)
+    console.log(req.body)
     // 1 throw an error if user POSTs password
     if (req.body.password || req.body.passwordConfirm) {
         return next(

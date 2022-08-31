@@ -1,4 +1,5 @@
 const express = require('express')
+const multer = require('multer')
 const userController = require('../controllers/userController')
 const authController = require('../controllers/authController')
 
@@ -14,7 +15,12 @@ router.use(authController.protect)
 router.patch('/updateMyPassword', authController.updatePassword)
 
 router.get('/me', userController.getMe, userController.getUser)
-router.patch('/updateMe', userController.updateMe)
+// .single表示上传单个文件，'photo'表示要上传的字段的名称
+router.patch(
+    '/updateMe',
+    userController.uploadUserPhoto,
+    userController.updateMe
+)
 router.delete('/deleteMe', userController.deleteMe)
 
 // 将如下的api都限制为admin角色可用

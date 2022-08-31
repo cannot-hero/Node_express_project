@@ -3006,3 +3006,92 @@ if (userPasswordForm) {
 
 ```
 
+# Advanced features: payments, email, file uploads
+
+uploads,image processing, send email, send credit card payments
+
+## 197 使用multer上传图片
+
+multer 用于表单上传文件，multer是一个用于multi-part form data的中间件
+
+```js
+userRoutes.js
+// 不是直接上传到数据库中，首先上传到file system中，然后将图片的link上传到数据库
+const upload = multer({ dest: 'public/img/users' })
+
+// .single表示上传单个文件，'photo'表示要上传的字段的名称
+router.patch('/updateMe', upload.single('photo'), userController.updateMe)
+```
+
+发请求
+
+```json
+{
+    "name":"Leo J. Gillespie",
+    "photo"
+}
+```
+
+form-data
+
+```txt
+name Leo J. Gillespie
+photo 选择一个file
+```
+
+
+
+## 198 configure multer
+
+step1 给图像一个更好的文件名
+
+step2 只允许图片文件上传到服务器
+
+
+
+```js
+//userRoutes.js
+// .single表示上传单个文件，'photo'表示要上传的字段的名称
+router.patch(
+    '/updateMe',
+    userController.uploadUserPhoto,
+    userController.updateMe
+)
+```
+
+userController.js
+
+```js
+// 创建一个multer storage 一个multer filter，然后通过upload上传
+const multerStorage = multer.diskStorage({
+    // cb类似于express中的next
+    destination: (req, file, cb) => {
+        cb(null, 'public/img/users')
+    },
+    filename: (req, file, cb) => {
+        // filename user-id-时间戳.jpeg
+        const ext = file.mimetype.split('/')[1]
+        // null 代表no error 第二个参数是文件名
+        cb(null, `user-${req.user.id}-${Date.now()}.${ext}`)
+    }
+})
+// multer filter
+const multerFilter = (req, file, cb) => {
+    // 判断上传的是否是图像，是则通过
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true)
+    } else {
+        cb(new AppError('Not an image. Please upload only images!', 400), false)
+    }
+}
+// 不是直接上传到数据库中，首先上传到file system中，然后将图片的link上传到数据库
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+// 'photo' 表示上传的字段
+exports.uploadUserPhoto = upload.single('photo')
+
+```
+
