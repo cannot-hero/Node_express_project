@@ -1,22 +1,25 @@
 const multer = require('multer')
+const sharp = require('sharp')
 const AppError = require('../utils/appError')
 const User = require('./../models/userModel')
 const catchAsync = require('./../utils/catchAsync')
 const factory = require('./handlerFactory')
 
 // 创建一个multer storage 一个multer filter，然后通过upload上传
-const multerStorage = multer.diskStorage({
-    // cb类似于express中的next
-    destination: (req, file, cb) => {
-        cb(null, 'public/img/users')
-    },
-    filename: (req, file, cb) => {
-        // filename user-id-时间戳.jpeg
-        const ext = file.mimetype.split('/')[1]
-        // null 代表no error 第二个参数是文件名
-        cb(null, `user-${req.user.id}-${Date.now()}.${ext}`)
-    }
-})
+// const multerStorage = multer.diskStorage({
+//     // cb类似于express中的next
+//     destination: (req, file, cb) => {
+//         cb(null, 'public/img/users')
+//     },
+//     filename: (req, file, cb) => {
+//         // filename user-id-时间戳.jpeg
+//         const ext = file.mimetype.split('/')[1]
+//         // null 代表no error 第二个参数是文件名
+//         cb(null, `user-${req.user.id}-${Date.now()}.${ext}`)
+//     }
+// })
+// 使文件可以存在buffer中
+const multerStorage = multer.memoryStorage()
 // multer filter
 const multerFilter = (req, file, cb) => {
     // 判断上传的是否是图像，是则通过
@@ -35,6 +38,19 @@ const upload = multer({
 // 'photo' 表示上传的字段
 exports.uploadUserPhoto = upload.single('photo')
 
+exports.resizeUserPhoto = (req, res, next) => {
+    // 如果没有更新 则什么都不做
+    if (!req.file) return next()
+    // 图片要保存在内存中，而不是disk中
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`
+    sharp(req.file.buffer)
+        .resize(500, 500)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/users/${req.file.filename}`)
+    next()
+}
+
 // 剩余字段会成一个数组
 const filterObj = (obj, ...allowedFields) => {
     const newObj = {}
@@ -49,8 +65,6 @@ const filterObj = (obj, ...allowedFields) => {
 
 // 更新用户个人信息
 exports.updateMe = catchAsync(async (req, res, next) => {
-    console.log(req.file)
-    console.log(req.body)
     // 1 throw an error if user POSTs password
     if (req.body.password || req.body.passwordConfirm) {
         return next(
@@ -62,6 +76,9 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     }
     // 2 Filter the unwanted flieds in req.body
     const filterBody = filterObj(req.body, 'name', 'email')
+    // 只存phot的名称，将photo字段存起来， 这样命名是将其挂载在req上
+    // 下一个中间件可以继续使用
+    if (req.file) filterBody.photo = req.file.filename
     // 3 Update user document
     // 因为是和密码无关的，所以可以用 findByIdAndUpdate {new:true}表示返回更新后的对象
     // x 是将req.body中属性做了filter之后的

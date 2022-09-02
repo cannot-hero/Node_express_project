@@ -3095,3 +3095,77 @@ exports.uploadUserPhoto = upload.single('photo')
 
 ```
 
+## 199 更新数据库中字段
+
+```js
+exports.updateMe = catchAsync(async (req, res, next) => {
+    // 1 throw an error if user POSTs password
+    if (req.body.password || req.body.passwordConfirm) {
+        return next(
+            new AppError(
+                'This route is not for password update. Please use updateMyPassword.',
+                400 // bad request
+            )
+        )
+    }
+    // 2 Filter the unwanted flieds in req.body
+    const filterBody = filterObj(req.body, 'name', 'email')
+    // 只存phot的名称，将photo字段存起来
+    if (req.file) filterBody.photo = req.file.filename
+    // 3 Update user document
+    // 因为是和密码无关的，所以可以用 findByIdAndUpdate {new:true}表示返回更新后的对象
+    // x 是将req.body中属性做了filter之后的
+    const updateUser = await User.findByIdAndUpdate(req.user.id, filterBody, {
+        new: true,
+        runValidators: true
+    })
+
+    res.status(200).json({
+        status: 'success',
+        user: updateUser
+    })
+})
+```
+
+新注册的用户添加默认头像
+
+```js
+// userModel.js    
+photo: { type: String, default: 'default.jpg' },
+```
+
+## 200 调整图片大小和格式
+
+resize and convert our images
+
+目前图片上传为正方形才会有效，在updateMe这个中间件前面添加一个中间件，对图片进行处理
+
+使用`sharp`进行图片处理。
+
+```js
+// userController.js
+exports.resizeUserPhoto = (req, res, next) => {
+    // 如果没有更新 则什么都不做
+    if (!req.file) return next()
+    // 只存phot的名称，将photo字段存起来， 这样命名是将其挂载在req上
+    // 下一个中间件可以继续使用
+    req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`
+    sharp(req.file.buffer)
+        .resize(500, 500)
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/users/${req.file.filename}`)
+    next()
+}
+// userRoutes.js
+router.patch(
+    '/updateMe',
+    userController.uploadUserPhoto,
+    userController.resizeUserPhoto,
+    userController.updateMe
+)
+```
+
+## 201前端上传图片
+
+提交表单
