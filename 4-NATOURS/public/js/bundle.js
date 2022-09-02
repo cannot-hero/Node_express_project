@@ -8727,13 +8727,14 @@ if (logOutBtn) logOutBtn.addEventListener('click', _login.logout); // update use
 if (userDataForm) {
   userDataForm.addEventListener('submit', function (e) {
     // preventDefault 阻止表单提交
-    e.preventDefault();
-    var name = document.getElementById('name').value;
-    var email = document.getElementById('email').value;
-    (0, _updateSettings.updateSettings)({
-      name: name,
-      email: email
-    }, 'data');
+    e.preventDefault(); // create a new form, to appending new data 重建了表单
+
+    var form = new FormData();
+    form.append('name', document.getElementById('name').value);
+    form.append('email', document.getElementById('email').value);
+    form.append('photo', document.getElementById('photo').files[0]);
+    console.log(form);
+    (0, _updateSettings.updateSettings)(form, 'data');
   });
 }
 
