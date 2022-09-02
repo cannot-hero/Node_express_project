@@ -3169,3 +3169,130 @@ router.patch(
 ## 201前端上传图片
 
 提交表单
+
+```js
+// update user data
+if (userDataForm) {
+    userDataForm.addEventListener('submit', e => {
+        // preventDefault 阻止表单提交
+        e.preventDefault()
+        // create a new form, to appending new data 重建了表单
+        const form = new FormData()
+        form.append('name', document.getElementById('name').value)
+        form.append('email', document.getElementById('email').value)
+        form.append('photo', document.getElementById('photo').files[0])
+        // console.log(form)
+        updateSettings(form, 'data')
+    })
+}
+```
+
+## 202 上传多张图片
+
+```js
+
+// 使文件可以存在buffer中
+const multerStorage = multer.memoryStorage()
+// multer filter
+const multerFilter = (req, file, cb) => {
+    // 判断上传的是否是图像，是则通过
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true)
+    } else {
+        cb(new AppError('Not an image. Please upload only images!', 400), false)
+    }
+}
+// 不是直接上传到数据库中，首先上传到file system中，然后将图片的link上传到数据库
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+// upload.single('image') req.file
+// upload.array('image',3)  req.files 混合用fields
+exports.uploadTourImages = upload.fields([
+    // 数据库中相关字段
+    { name: 'imageCover', maxCount: 1 },
+    { name: 'images', maxCount: 3 }
+])
+exports.resizeTourImages = (req, res, next) => {
+    // 多个文件时 是req.files
+    console.log(req.files)
+    next()
+}
+```
+
+## 203 调整图片大小，并保存
+
+首先创建一个multer上传中间件（memory storage）和一个过滤中间件(for images)
+
+创建一个上传图片中间件，（声明每个字段接收几个）
+
+```js
+// 使文件可以存在buffer中
+const multerStorage = multer.memoryStorage()
+// multer filter
+const multerFilter = (req, file, cb) => {
+    // 判断上传的是否是图像，是则通过
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true)
+    } else {
+        cb(new AppError('Not an image. Please upload only images!', 400), false)
+    }
+}
+// 不是直接上传到数据库中，首先上传到file system中，然后将图片的link上传到数据库
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+```
+
+
+
+调整图片大小
+
+
+
+将图片名称放在req.body上，注意Promise.all的使用
+
+```js
+exports.uploadTourImages = upload.fields([
+    // 数据库中相关字段
+    { name: 'imageCover', maxCount: 1 },
+    { name: 'images', maxCount: 3 }
+])
+
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+    // 多个文件时 是req.files
+    if (!req.files.imageCover || !req.files.images) {
+        return next()
+    }
+    // 1) Cover image
+    // 挂载到req.body上对数据库字段进行更新
+    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333) // 3/2 ratio
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${req.body.imageCover}`)
+
+    // 2) Images
+    req.body.images = []
+    // 因为回调中的异步函数只会在回调函数中阻塞，不会阻塞next
+    // req.files.images.forEach(async (file, i) => {
+    await Promise.all(
+        req.files.images.map(async (file, i) => {
+            const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`
+            await sharp(file.buffer)
+                .resize(2000, 1333) // 3/2 ratio
+                .toFormat('jpeg')
+                .jpeg({ quality: 90 })
+                .toFile(`public/img/tours/${filename}`)
+            // 将文件名存起来
+            req.body.images.push(filename)
+        })
+    )
+    next()
+})
+```
+

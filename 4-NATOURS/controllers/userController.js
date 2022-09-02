@@ -38,18 +38,18 @@ const upload = multer({
 // 'photo' 表示上传的字段
 exports.uploadUserPhoto = upload.single('photo')
 
-exports.resizeUserPhoto = (req, res, next) => {
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
     // 如果没有更新 则什么都不做
     if (!req.file) return next()
     // 图片要保存在内存中，而不是disk中
     req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`
-    sharp(req.file.buffer)
+    await sharp(req.file.buffer)
         .resize(500, 500)
         .toFormat('jpeg')
         .jpeg({ quality: 90 })
         .toFile(`public/img/users/${req.file.filename}`)
     next()
-}
+})
 
 // 剩余字段会成一个数组
 const filterObj = (obj, ...allowedFields) => {

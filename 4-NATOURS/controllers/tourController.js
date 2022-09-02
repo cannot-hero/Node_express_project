@@ -1,8 +1,67 @@
+const multer = require('multer')
+const sharp = require('sharp')
 const AppError = require('../utils/appError')
 const Tour = require('./../models/toursModel')
 const APIFeatures = require('./../utils/apiFeatures')
 const catchAsync = require('./../utils/catchAsync')
 const factory = require('./handlerFactory')
+
+// 使文件可以存在buffer中
+const multerStorage = multer.memoryStorage()
+// multer filter
+const multerFilter = (req, file, cb) => {
+    // 判断上传的是否是图像，是则通过
+    if (file.mimetype.startsWith('image')) {
+        cb(null, true)
+    } else {
+        cb(new AppError('Not an image. Please upload only images!', 400), false)
+    }
+}
+// 不是直接上传到数据库中，首先上传到file system中，然后将图片的link上传到数据库
+const upload = multer({
+    storage: multerStorage,
+    fileFilter: multerFilter
+})
+
+// upload.single('image') req.file
+// upload.array('image',3)  req.files 混合用fields
+exports.uploadTourImages = upload.fields([
+    // 数据库中相关字段
+    { name: 'imageCover', maxCount: 1 },
+    { name: 'images', maxCount: 3 }
+])
+exports.resizeTourImages = catchAsync(async (req, res, next) => {
+    // 多个文件时 是req.files
+    if (!req.files.imageCover || !req.files.images) {
+        return next()
+    }
+    // 1) Cover image
+    // 挂载到req.body上对数据库字段进行更新
+    req.body.imageCover = `tour-${req.params.id}-${Date.now()}-cover.jpeg`
+    await sharp(req.files.imageCover[0].buffer)
+        .resize(2000, 1333) // 3/2 ratio
+        .toFormat('jpeg')
+        .jpeg({ quality: 90 })
+        .toFile(`public/img/tours/${req.body.imageCover}`)
+
+    // 2) Images
+    req.body.images = []
+    // 因为回调中的异步函数只会在回调函数中阻塞，不会阻塞next
+    // req.files.images.forEach(async (file, i) => {
+    await Promise.all(
+        req.files.images.map(async (file, i) => {
+            const filename = `tour-${req.params.id}-${Date.now()}-${i + 1}.jpeg`
+            await sharp(file.buffer)
+                .resize(2000, 1333) // 3/2 ratio
+                .toFormat('jpeg')
+                .jpeg({ quality: 90 })
+                .toFile(`public/img/tours/${filename}`)
+            // 将文件名存起来
+            req.body.images.push(filename)
+        })
+    )
+    next()
+})
 // const tours = JSON.parse(
 //     fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`)
 // )
