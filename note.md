@@ -3441,3 +3441,27 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
 })
 ```
 
+## 208 SendGrid发送邮件
+
+```js
+    if (process.env.NODE_ENV === 'production') {
+      // Sendgrid
+      return nodemailer.createTransport({
+        service: 'SendGrid',
+        auth: {
+          user: process.env.SENDGRID_USERNAME,
+          pass: process.env.SENDGRID_PASSWORD
+        }
+      });
+    }
+```
+
+mailsac发送邮件
+
+
+
+## 209 使用Stripe来做支付
+
+ 在後端建立一個支付會話(checkout session)
+
+在前端請求後端的checkout session，請求后後端會發來一個session給前端
