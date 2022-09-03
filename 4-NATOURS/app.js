@@ -14,6 +14,7 @@ const tourRouter = require('./routes/tourRoutes')
 const userRouter = require('./routes/userRoutes')
 const reviewRouter = require('./routes/reviewRoutes')
 const viewRouter = require('./routes/viewRoutes')
+const bookingRouter = require('./routes/bookingRoutes')
 
 const app = express()
 // define view engine
@@ -96,6 +97,7 @@ app.use('/', viewRouter) // 在‘/’route上使用viewRouter
 app.use('/api/v1/tours', tourRouter) // 在‘/api/v1/tours’route上使用tourRouter
 app.use('/api/v1/users', userRouter) // 在‘/api/v1/tours’route上使用tourRouter
 app.use('/api/v1/reviews', reviewRouter) // 在‘/api/v1/tours’route上使用tourRouter
+app.use('/api/v1/bookings', bookingRouter) // 在‘/api/v1/tours’route上使用tourRouter
 // 上面两个路由都没匹配到的话 就到下面这个路由
 // .all could run all the verbs in HTTP methods
 app.all('*', (req, res, next) => {

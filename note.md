@@ -3465,3 +3465,51 @@ mailsac发送邮件
  在後端建立一個支付會話(checkout session)
 
 在前端請求後端的checkout session，請求后後端會發來一個session給前端
+
+stripe建立一個checkout頁面
+
+服务器上用私钥，前端用公钥
+
+
+
+![image-20220903210001614](C:\Users\Mabiao\AppData\Roaming\Typora\typora-user-images\image-20220903210001614.png)
+
+```js
+exports.getCheoutSession = catchAsync(async (req, res, next) => {
+    // 1 Get the currently booking tour
+    const tour = await Tour.findById(req.params.tourId)
+    // 2 Create the checkout session
+    // 调用了stripe的api，所以是异步的
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        success_url: `${req.protocol}://${req.get('host')}/`,
+        cancel_url: `${req.protocol}://${req.get('host')}/tour/${tour.slug}`,
+        customer_email: req.user.email,
+        client_reference_id: req.params.tourId,
+        // detail about the product
+        line_items: [
+            {
+                price_data: {
+                    currency: 'usd',
+                    unit_amount: tour.price * 100,
+                    product_data: {
+                        name: `${tour.name} Tour`,
+                        description: tour.summary,
+                        images: [
+                            `https://www.natours.dev/img/tours/${tour.imageCover}`
+                        ]
+                    }
+                },
+                quantity: 1
+            }
+        ],
+        mode: 'payment'
+    })
+    // 3 Create session as response
+    res.status(200).json({
+        status: 'success',
+        session
+    })
+})
+```
+
