@@ -3513,3 +3513,62 @@ exports.getCheoutSession = catchAsync(async (req, res, next) => {
 })
 ```
 
+## 211 前端实现
+
+1 create checkout session
+
+book now 按钮
+
+要让button上记录tour的id
+
+```pug
+if user
+    button.btn.btn--green.span-all-rows#book-tour(data-tour-id=`${tour.id}`) Book tour now!
+else 
+    a.button.btn.btn--green.span-all-rows(href='/login') Log in to Book Tour
+```
+
+2 前端创建会话
+
+```js
+//stripe.js
+/* eslint-disable */
+import axios from 'axios'
+import { showAlert } from './alerts'
+//前端使用公钥
+const stripe = Stripe(
+    'pk_test_51LdvapATwayfKpSDiXmeSlhJj4ekmwCxoNJn2Rq3qTeZz6TR0S6XOMzUyFomegHqUuNbzN1zxIylUNbU11suIwJr00TItTF562'
+)
+
+export const bookTour = async tourId => {
+    try {
+        // 1 Get session from server(API)
+        const session = await axios({
+            url: `http://127.0.0.1:3000/api/v1/bookings/checkout-session/${tourId}`
+        })
+        console.log(session)
+        // 2 Create checkout form + charge credit card
+        await stripe.redirectToCheckout({
+            sessionId: session.data.session.id
+        })
+    } catch (err) {
+        console.log(err)
+        showAlert('error', err)
+    }
+}
+```
+
+```js
+//index.js
+const bookBtn = document.getElementById('book-tour')
+.
+if (bookBtn) {
+    bookBtn.addEventListener('click', e => {
+        // target是被点击的元素
+        e.target.textContent = 'Processing...'
+        const { tourId } = e.target.dataset
+        bookTour(tourId)
+    })
+}
+```
+
