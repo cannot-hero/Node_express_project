@@ -3387,3 +3387,57 @@ exports.signup = catchAsync(async (req, res, next) => {
 })
 ```
 
+## 207 send email to pasword reset
+
+1 模板
+
+
+
+2 发邮件
+
+```js
+// email.js
+    async sendPasswordReset() {
+        await this.send(
+            'passwordReset',
+            'Your password reset token (valid for ten minutes)'
+        )
+    }
+```
+
+```js
+// 忘记密码和重置密码
+exports.forgetPassword = catchAsync(async (req, res, next) => {
+    // 1 get user based on posted email
+    const user = await User.findOne({ email: req.body.email })
+    if (!user) {
+        return next(new AppError('This email does not have a user!', 404))
+    }
+    // 2 generate the random reset token
+    const resetToken = user.createPasswordResetToken()
+    await user.save({ validateBeforeSave: false })
+    // 3 send it to user's email
+    // 发送原始的token，而不是加密后的
+    try {
+        const resetURL = `${req.protocol}://${req.get(
+            'host'
+        )}/api/v1/users/resetPassword/${resetToken}`
+        await new Email(user, resetURL).sendPasswordReset()
+        res.status(200).json({
+            status: 'success',
+            message: 'Token send to email!'
+        })
+    } catch (err) {
+        // 如果出错就重置token和expires属性
+        user.passwordResetToken = undefined
+        user.passwordResetExpires = undefined
+        // this only modifies the data, doesnt really save it
+        await user.save({ validateBeforeSave: false })
+        return next(
+            new AppError('There was an error sending email, try it later!'),
+            500
+        )
+    }
+})
+```
+

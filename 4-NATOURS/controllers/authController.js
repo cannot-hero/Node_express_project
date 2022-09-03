@@ -202,16 +202,11 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     await user.save({ validateBeforeSave: false })
     // 3 send it to user's email
     // 发送原始的token，而不是加密后的
-    const resetURL = `${req.protocol}://${req.get(
-        'host'
-    )}/api/v1/users/resetPassword/${resetToken}`
-    const message = `Forget your password? Submit a patch request with your new password and passwordconfirm to : ${resetURL} \n if you dont forget your password, please ignore this email`
     try {
-        // await sendEmail({
-        //     email: req.body.email,
-        //     subject: 'Your reset token (valid for 10 min)',
-        //     message
-        // })
+        const resetURL = `${req.protocol}://${req.get(
+            'host'
+        )}/api/v1/users/resetPassword/${resetToken}`
+        await new Email(user, resetURL).sendPasswordReset()
         res.status(200).json({
             status: 'success',
             message: 'Token send to email!'
