@@ -3296,3 +3296,94 @@ exports.resizeTourImages = catchAsync(async (req, res, next) => {
 })
 ```
 
+## 204 email class
+
+```js
+module.exports = class Email {
+    constructor(user, url) {
+        this.to = user.email
+        this.firstName = user.name.split(' ')[0]
+        this.url = url
+        this.from = `Ma shu <${process.env.EMAIL_FROM}>`
+    }
+
+    newTransport() {
+        // 1 create (return) a transporter
+        if (process.env.NODE_ENV === 'production') {
+            // Sendgrid
+            return 1
+        }
+        return nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            auth: {
+                user: process.env.EMAIL_USERNAME,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        })
+    }
+
+    // Send the actual email
+    async send(template, subject) {
+        // 1) Render HTML based on a pug template
+        const html = pug.renderFile(
+            `${__dirname}/../views/email/${template}.pug`,
+            {
+                firstName: this.firstName,
+                url: this.url,
+                subject
+            }
+        )
+        // 2) Define email options
+        const mailOptions = {
+            from: this.from,
+            // options.email 说明传入的参数是一个对象
+            to: this.to,
+            subject: subject,
+            html,
+            text: htmlToText.fromString(html)
+            // html:
+        }
+        // 3) Create a transport and send email
+        await this.newTransport().sendMail(mailOptions)
+    }
+
+    async sendWelcome() {
+        await this.send('welcome', 'Welcome to the Natours Family!')
+    }
+}
+
+```
+
+## 206 template with pug ,welcome Emails
+
+在authController中使用发送邮件
+
+```js
+exports.signup = catchAsync(async (req, res, next) => {
+    // 避免用户的手动注入，所以要吧req.body的对应内容提取出来
+    const newUser = await User.create({
+        name: req.body.name,
+        email: req.body.email,
+        password: req.body.password,
+        passwordConfirm: req.body.passwordConfirm,
+        // 视频里没加这个字段 👇
+        // passwordChangedAt: req.body.passwordChangedAt,
+        role: req.body.role
+    })
+    const url = `${req.protocol}://${req.get('host')}/me`
+    console.log(url)
+    await new Email(newUser, url).sendWelcome()
+    // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
+    createSendToken(newUser, 201, res)
+    // 注册时不用验证密码和邮箱
+    // res.status(200).json({
+    //     status: 'success',
+    //     token,
+    //     data: {
+    //         user: newUser
+    //     }
+    // })
+})
+```
+

@@ -1,27 +1,57 @@
 const nodemailer = require('nodemailer')
-
-const sendMail = async options => {
-    // 1 create a transporter
-    const transporter = nodemailer.createTransport({
-        host: process.env.EMAIL_HOST,
-        port: process.env.EMAIL_PORT,
-        auth: {
-            user: process.env.EMAIL_USERNAME,
-            pass: process.env.EMAIL_PASSWORD
-        }
-    })
-    // 2 define the email options
-    const mailOptions = {
-        from: 'Ma shu <hello@foxmail.com>',
-        // options.email 说明传入的参数是一个对象
-        to: options.email,
-        subject: options.subject,
-        text: options.message
-        // html:
+const pug = require('pug')
+const htmlToText = require('html-to-text')
+// new Email(user, url).sendWelcome()
+module.exports = class Email {
+    constructor(user, url) {
+        this.to = user.email
+        this.firstName = user.name.split(' ')[0]
+        this.url = url
+        this.from = `Ma shu <${process.env.EMAIL_FROM}>`
     }
-    // 3 actually send the email
-    // 👇 async function
-    await transporter.sendMail(mailOptions)
-}
 
-module.exports = sendMail
+    newTransport() {
+        // 1 create (return) a transporter
+        if (process.env.NODE_ENV === 'production') {
+            // Sendgrid
+            return 1
+        }
+        return nodemailer.createTransport({
+            host: process.env.EMAIL_HOST,
+            port: process.env.EMAIL_PORT,
+            auth: {
+                user: process.env.EMAIL_USERNAME,
+                pass: process.env.EMAIL_PASSWORD
+            }
+        })
+    }
+
+    // Send the actual email
+    async send(template, subject) {
+        // 1) Render HTML based on a pug template
+        const html = pug.renderFile(
+            `${__dirname}/../views/email/${template}.pug`,
+            {
+                firstName: this.firstName,
+                url: this.url,
+                subject
+            }
+        )
+        // 2) Define email options
+        const mailOptions = {
+            from: this.from,
+            // options.email 说明传入的参数是一个对象
+            to: this.to,
+            subject: subject,
+            html,
+            text: htmlToText.fromString(html)
+            // html:
+        }
+        // 3) Create a transport and send email
+        await this.newTransport().sendMail(mailOptions)
+    }
+
+    async sendWelcome() {
+        await this.send('welcome', 'Welcome to the Natours Family!')
+    }
+}

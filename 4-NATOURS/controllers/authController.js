@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../models/userModel')
 const catchAsync = require('./../utils/catchAsync')
 const AppError = require('./../utils/appError')
-const sendEmail = require('./../utils/email')
+const Email = require('./../utils/email')
 
 const signToken = id => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -50,6 +50,9 @@ exports.signup = catchAsync(async (req, res, next) => {
         // passwordChangedAt: req.body.passwordChangedAt,
         role: req.body.role
     })
+    const url = `${req.protocol}://${req.get('host')}/me`
+    console.log(url)
+    await new Email(newUser, url).sendWelcome()
     // payload(object)是想要存储在toekn里的数据,secret用HSA-256加密。secret至少32charcator
     createSendToken(newUser, 201, res)
     // 注册时不用验证密码和邮箱
@@ -204,11 +207,11 @@ exports.forgetPassword = catchAsync(async (req, res, next) => {
     )}/api/v1/users/resetPassword/${resetToken}`
     const message = `Forget your password? Submit a patch request with your new password and passwordconfirm to : ${resetURL} \n if you dont forget your password, please ignore this email`
     try {
-        await sendEmail({
-            email: req.body.email,
-            subject: 'Your reset token (valid for 10 min)',
-            message
-        })
+        // await sendEmail({
+        //     email: req.body.email,
+        //     subject: 'Your reset token (valid for 10 min)',
+        //     message
+        // })
         res.status(200).json({
             status: 'success',
             message: 'Token send to email!'
