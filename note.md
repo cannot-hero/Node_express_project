@@ -3621,3 +3621,35 @@ module.exports = Booking
 每当访问到success_url就在数据库中创建一个新的booking
 
 在query中携带数据
+
+bookingController.js
+
+```js
+        // 注意，下面这种写法不安全
+        success_url: `${req.protocol}://${req.get('host')}/?tour=${
+            req.params.tourId
+        }&user=${req.user.id}&price=${tour.price}`,
+```
+
+```js
+exports.createBookingCheckout = catchAsync(async (req, res, next) => {
+    const { tour, user, price } = req.query
+    if (!user && !tour && !price) return next()
+    await Booking.create({ user, tour, price })
+    // 不显示query参数，让路径更安全一些，不透露重要信息
+    // `${req.protocol}://${req.get('host')}/  重新请求后会因为上一个if判断而直接到主页
+    res.redirect(req.originalUrl.split('?')[0])
+})
+```
+
+viewRoutes.js
+
+```js
+router.get(
+    '/',
+    bookingController.createBookingCheckout,
+    authController.isLoggedIn,
+    viewController.getOverview
+)
+```
+
