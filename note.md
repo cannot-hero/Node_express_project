@@ -3653,3 +3653,28 @@ router.get(
 )
 ```
 
+## 214 Render a User's Booked Tours
+
+1 写route
+
+```js
+router.get('/my-tours', authController.protect, viewController.getMyTours)
+```
+
+```js
+// 找到所有预定了的Tour
+exports.getMyTours = catchAsync(async (req, res, next) => {
+    // 1 Find all bookings
+    const bookings = await Booking.find({ user: req.user.id }) // 这里只找到了tourid
+    // 2 Find tours with the id
+    const tourIds = bookings.map(el => el.tour)
+    const tours = await Tour.find({ _id: { $in: tourIds } })
+
+    res.status(200).render('overview', {
+        title: 'My Tours',
+        tours
+    })
+})
+```
+
+2 改模板中的url

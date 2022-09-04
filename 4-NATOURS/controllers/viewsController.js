@@ -1,5 +1,6 @@
 const Tour = require('../models/toursModel')
 const User = require('../models/userModel')
+const Booking = require('../models/bookingModel')
 const AppError = require('../utils/appError')
 const catchAsync = require('../utils/catchAsync')
 
@@ -43,6 +44,19 @@ exports.getAccount = (req, res) => {
         title: 'Your account'
     })
 }
+// 找到所有预定了的Tour
+exports.getMyTours = catchAsync(async (req, res, next) => {
+    // 1 Find all bookings
+    const bookings = await Booking.find({ user: req.user.id }) // 这里只找到了tourid
+    // 2 Find tours with the id
+    const tourIds = bookings.map(el => el.tour)
+    const tours = await Tour.find({ _id: { $in: tourIds } })
+
+    res.status(200).render('overview', {
+        title: 'My Tours',
+        tours
+    })
+})
 
 exports.updateUserData = catchAsync(async (req, res, next) => {
     // 永远不要用findByIdAndUpdate来更新密码
