@@ -3678,3 +3678,35 @@ exports.getMyTours = catchAsync(async (req, res, next) => {
 ```
 
 2 改模板中的url
+
+## 215 Finishing the booking api
+
+bookingController.js
+
+```js
+exports.createBooking = factory.createOne(Booking)
+exports.getBooking = factory.getOne(Booking)
+exports.getAllBooking = factory.getAll(Booking)
+exports.updateBooking = factory.updateOne(Booking)
+exports.deleteBooking = factory.deleteOne(Booking)
+```
+
+bookingRoutes.js
+
+```js
+router.use(authController.protect)
+
+router.get('/checkout-session/:tourId', bookingController.getCheoutSession)
+
+router.use(authController.restrictTo('admin', 'lead-guide'))
+router
+    .route('/')
+    .get(bookingController.getAllBooking)
+    .post(bookingController.createBooking)
+router
+    .route('/:id')
+    .get(bookingController.getBooking)
+    .patch(bookingController.updateBooking)
+    .delete(bookingController.deleteBooking)
+```
+

@@ -53,3 +53,9 @@ exports.createBookingCheckout = catchAsync(async (req, res, next) => {
     // `${req.protocol}://${req.get('host')}/  重新请求后会因为上一个if判断而直接到主页
     res.redirect(req.originalUrl.split('?')[0])
 })
+
+exports.createBooking = factory.createOne(Booking)
+exports.getBooking = factory.getOne(Booking)
+exports.getAllBooking = factory.getAll(Booking)
+exports.updateBooking = factory.updateOne(Booking)
+exports.deleteBooking = factory.deleteOne(Booking)
