@@ -3572,3 +3572,52 @@ if (bookBtn) {
 }
 ```
 
+## 212 要在数据库中记录booking
+
+```js
+const mongoose = require('mongoose')
+
+const bookingSchema = mongoose.Schema({
+    // 保留tour和user字段
+    tour: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'Tour',
+        required: [true, 'Booking must belong to a tour!']
+    },
+    user: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'User',
+        required: [true, 'Booking must belong to a user!']
+    },
+    price: {
+        type: Number,
+        required: [true, 'Booking must have a price.']
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now()
+    },
+    paid: {
+        type: Boolean,
+        default: true
+    }
+})
+
+// 自动填充User和Tour字段
+bookingSchema.pre(/^find/, function(next) {
+    this.populate('user').populate({
+        path: 'tour',
+        select: 'name'
+    })
+})
+
+const Booking = mongoose.model('Booking', bookingSchema)
+
+module.exports = Booking
+```
+
+## 213 creating new bookings on checkout success
+
+每当访问到success_url就在数据库中创建一个新的booking
+
+在query中携带数据
